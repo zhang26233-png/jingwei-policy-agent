@@ -218,7 +218,7 @@ export function extractNumbers(text) {
 const DOC_RULES = [
   { type: '工作动态', test: /(记账式|招标|兑付|续发行|到期偿还|贴现\s*（|发行\s*\d{4}\s*年)/ },
   { type: '发布实录', test: /(发布会|实录|答记者问|记者问|吹风会|通气会|专访)/ },
-  { type: '数据发布', test: /(收支情况|统计数据|运行情况|统计公报|数据解读|景气指数|采购经理指数|销售情况|完成情况|进展情况|月份.{0,8}情况)/ },
+  { type: '数据发布', test: /(收支情况|统计数据|运行情况|统计公报|数据解读|景气指数|采购经理指数|销售情况|完成情况|进展情况|月份.{0,8}情况|变动情况|核算结果|基本情况|价格情况)/ },
   {
     type: '政策文件',
     test: /(通知|办法|公告|批复|规定|意见|方案|规划|决定|条例|准则|规则|指引|目录|清单|计划|细则|暂行|实施|印发|发文|税则|税率)/,
@@ -404,21 +404,29 @@ export function extractEffective(text) {
 // 量化目标：必须同时出现"到/至 + 年份 + 指标 + 方向/数值"，否则不认。
 // 年份前必须带"到/至/截至"，是为了挡住"2026年10月1日起实施…期限不超过5年"这类被"不超过"误命中的条件句。
 const TARGET_PATTERN =
-  /(?:到|至|截至|截止到)\s*(20\d{2})\s*年(?:底|末|前|之前)?[^。；]{0,90}?(?:达到|不低于|不超过|超过|降至|压减到|控制在|提高到|提升到|上升到|增长到|突破|保持在|稳定在|占比|覆盖率达到|基本建成|全面建成|建成|力争|确保|实现)[^。；]{0,50}/g;
+  /(?:到|至|截至|截止到)\s*(20\d{2})\s*年(?:底|末|前|之前)?[^。；]{0,90}?(?:达到|不低于|不超过|超过|降至|压减到|控制在|提高到|提升到|上升到|增长到|突破|保持在|稳定在|占比|覆盖率达到|基本建成|全面建成|建成|力争|确保|实现|基本形成|基本建立|基本理顺|全面摸清|显著提升|明显改善|更加完善|更加健全|取得)[^。；]{0,50}/g;
+
+/** 倒装句式：动词在前、年份在后，如「实现到 2030 年……」 */
+const TARGET_PATTERN_INVERTED =
+  /(?:实现|确保|力争|推动|基本实现)[^。；]{0,6}(?:到|至)\s*(20\d{2})\s*年[^。；]{0,80}/g;
 
 export function extractQuantTargets(text) {
   const results = [];
   const seen = new Set();
-  for (const match of String(text || '').matchAll(TARGET_PATTERN)) {
-    const phrase = match[0].replace(/\s+/g, '').replace(/^[，。；：、]/, '');
-    if (phrase.length < 10 || phrase.length > 110 || seen.has(phrase)) continue;
-    seen.add(phrase);
-    const value = /(\d+(?:\.\d+)?)\s*(?:%|％|万亿|亿|万|个百分点|个|项|家|人)/.exec(phrase);
-    results.push({
-      text: phrase,
-      year: match[1],
-      value: value ? value[0] : '',
-    });
+  const body = String(text || '');
+  // 两种句式都要跑：常规"到 2030 年……基本形成"，倒装"实现到 2030 年……"。
+  for (const pattern of [TARGET_PATTERN, TARGET_PATTERN_INVERTED]) {
+    for (const match of body.matchAll(pattern)) {
+      const phrase = match[0].replace(/\s+/g, '').replace(/^[，。；：、]/, '');
+      if (phrase.length < 10 || phrase.length > 110 || seen.has(phrase)) continue;
+      seen.add(phrase);
+      const value = /(\d+(?:\.\d+)?)\s*(?:%|％|万亿|亿|万|个百分点|个|项|家|人)/.exec(phrase);
+      results.push({
+        text: phrase,
+        year: match[1],
+        value: value ? value[0] : '',
+      });
+    }
   }
   return results.slice(0, 5);
 }
@@ -457,20 +465,31 @@ export function extractObligations(text) {
     .filter((group) => group.items.length > 0);
 }
 
-// 实施主体：只认"由X负责""X会同Y""各地X部门"三类明确表述。
+// 实施主体：只认"由X负责""X会同Y""各地X部门""XX主管部门负责"四类明确表述。
 const IMPLEMENTER_PATterns = [
   /由([\u4e00-\u9fa5]{2,14}?)(?:负责|牵头|组织实施|具体承担)/g,
   /([\u4e00-\u9fa5]{2,10}(?:部|委|局|署|行|院|厅))会同([\u4e00-\u9fa5]{2,14}?)(?:负责|实施|推进)/g,
   /(各(?:省|自治区|直辖市)[^，。]{0,12})/g,
+  // 行政法规的典型写法：「国务院知识产权行政部门负责……」「XX主管部门负责……」，主体以"部门/机关"结尾
+  /((?:国家|国务院|省|市|县|地方|城镇)?[\u4e00-\u9fa5]{0,12}(?:主管部门|管理部门|管理机关|行政部门|登记管理机关|管理机构))(?=负责|会同|应当|责令|制定|提出|按照|依法)/g,
 ];
 
 export function extractImplementers(text) {
   const found = [];
   for (const pattern of IMPLEMENTER_PATterns) {
     for (const match of String(text || '').matchAll(pattern)) {
-      const name = (match[1] || '').replace(/\s+/g, '').trim();
-      if (name.length < 2 || name.length > 16) continue;
+      const name = (match[1] || '')
+        .replace(/\s+/g, '')
+        // 主体名前面常粘着条号（"第五条国家事业单位登记管理机关"），必须剥掉，否则不是机构名
+        .replace(/^第[一二三四五六七八九十百零\d]+条(之[一二三四五六七八九十]+)?/, '')
+        .replace(/^[，。；：、]/, '')
+        .trim();
+      if (name.length < 2 || name.length > 20) continue;
       if (/^(此|该|其|上述|有关|相关)$/.test(name)) continue;
+      // "有关主管部门""相关管理部门"是泛称，指不到具体单位，不进实施主体
+      if (/^(有关|相关|各级|地方各级)/.test(name)) continue;
+      // "局领导""负责同志"是人不是单位
+      if (/(领导|同志|人员|干部)$/.test(name)) continue;
       if (!found.includes(name)) found.push(name);
     }
   }

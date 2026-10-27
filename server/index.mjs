@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SOURCES, fetchLists, fetchArticles } from './sources.mjs';
 import { extractPolicy } from './extract.mjs';
+import { buildAudit } from './audit.mjs';
 import { load, save, getPolicies, upsertPolicies, recordRun, summary } from './store.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -202,6 +203,10 @@ const server = http.createServer(async (req, res) => {
       policies: getPolicies(),
       catalog: SOURCES.map(({ id, name, org, entry, level, note }) => ({ id, name, org, entry, level, note })),
     });
+  }
+
+  if (url.pathname === '/api/audit' && req.method === 'GET') {
+    return json(res, 200, buildAudit(getPolicies()));
   }
 
   if (url.pathname === '/api/collect' && req.method === 'POST') {

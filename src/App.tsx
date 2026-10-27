@@ -6,6 +6,7 @@ import {
   GitCompareArrows,
   Library,
   Map,
+  ClipboardCheck,
   Menu,
   Radar,
   ShieldCheck,
@@ -24,12 +25,14 @@ import { PolicyLibrary } from './views/PolicyLibrary';
 import { ImpactView } from './views/ImpactView';
 import { CompareView } from './views/CompareView';
 import { MethodView } from './views/MethodView';
+import { AuditView } from './views/AuditView';
 
 const NAV_ITEMS: { id: ViewName; label: string; icon: typeof FileSearch }[] = [
   { id: 'briefing', label: '一键研判', icon: Radar },
   { id: 'library', label: '政策库', icon: Library },
   { id: 'impact', label: '省级影响', icon: Map },
   { id: 'compare', label: '政策对比', icon: GitCompareArrows },
+  { id: 'audit', label: '质量体检', icon: ClipboardCheck },
   { id: 'workspace', label: '自由追问', icon: FileSearch },
   { id: 'method', label: '方法与边界', icon: ShieldCheck },
 ];
@@ -250,6 +253,7 @@ function App() {
         requestedView === 'library' ||
         requestedView === 'impact' ||
         requestedView === 'compare' ||
+        requestedView === 'audit' ||
         requestedView === 'method'
       ) {
         setView(requestedView);
@@ -467,6 +471,7 @@ function App() {
           onExport={exportCurrent}
         />
       )}
+      {view === 'audit' && <AuditView onOpenPolicy={setSelectedPolicyId} />}
       {view === 'method' && <MethodView sources={corpus.sources} />}
 
       <footer className="site-footer">

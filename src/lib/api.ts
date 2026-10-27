@@ -94,3 +94,69 @@ export interface ScanOutcome {
   added: number;
   fetched: number;
 }
+
+/** 抽取质量体检：字段覆盖率 + 缺失归因 + 结论可回溯率 */
+export interface AuditGapReason {
+  id: string;
+  title: string;
+  issuer: string;
+  date: string;
+  reason: 'not-in-source' | 'missing-rule' | 'attachment' | 'no-body';
+}
+
+export interface AuditField {
+  key: string;
+  label: string;
+  hint: string;
+  covered: number;
+  total: number;
+  rate: number;
+  missing: AuditGapReason[];
+  gaps: { 'not-in-source': number; 'missing-rule': number; attachment: number; 'no-body': number };
+  ruleRate: number;
+  missingInAttachment: number;
+}
+
+export interface AuditResponse {
+  generatedAt: string;
+  corpus: {
+    total: number;
+    docs: number;
+    background: number;
+    attachmentOnly: number;
+    dates: { from: string; to: string };
+  };
+  fields: AuditField[];
+  traceability: {
+    checked: number;
+    reachable: number;
+    rate: number;
+    exact: number;
+    exactRate: number;
+    partial: number;
+    weak: number;
+    miss: number;
+    untraceablePolicy: number;
+    failures: { id: string; title: string; field: string; text: string; level: string; ratio: number }[];
+  };
+  structure: {
+    avgClauses: number;
+    avgSections: number;
+    avgParagraphs: number;
+    avgBodyChars: number;
+    medianFields: number;
+  };
+  verdict: {
+    level: 'ok' | 'fair' | 'risk';
+    headline: string;
+    suspect: number;
+    notInSource: number;
+    inAttachment: number;
+    notes: string[];
+    total: number;
+  };
+}
+
+export function fetchAudit() {
+  return request<AuditResponse>('/api/audit', undefined, 30000);
+}
