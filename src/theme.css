@@ -1,0 +1,588 @@
+/* ==========================================================================
+   宏策智研 · 情报终端主题层
+   只覆盖颜色、光影、质感与动效，不改任何布局尺寸。
+   ========================================================================== */
+
+:root {
+  /* 基底：深空墨黑，带一点点青，避免纯黑发死 */
+  --paper: #070c0e;
+  --paper-2: #0b1215;
+  --paper-3: #0f181c;
+  --paper-4: #132026;
+
+  /* 文字：不用纯白，用带青的浅灰，长时间看不刺眼 */
+  --ink: #e7f1ed;
+  --ink-soft: #b3c6c0;
+  --muted: #7f948e;
+  --muted-2: #5d726c;
+
+  /* 分隔线：低透明度青绿，形成"仪表刻度"感 */
+  --line: rgba(120, 214, 190, 0.14);
+  --line-strong: rgba(120, 214, 190, 0.3);
+
+  /* 主强调色：信号青绿。深底上够亮，作文字与填充都成立 */
+  --green: #2ee6b2;
+  --green-2: #7bffd8;
+  --green-3: rgba(46, 230, 178, 0.1);
+
+  /* 语义色 */
+  --rust: #ff8f6b;
+  --amber: #ffc247;
+  --blue: #7fb2ff;
+  --violet: #b9a5ff;
+
+  /* 阴影与辉光 */
+  --shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.03);
+  --shadow-md: 0 26px 60px -18px rgba(0, 0, 0, 0.72);
+  --glow-green: 0 0 0 1px rgba(46, 230, 178, 0.28), 0 0 34px -8px rgba(46, 230, 178, 0.55);
+
+  --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", STSong, SimSun, serif;
+  --sans: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------- 底图 --- */
+
+body {
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(1200px 640px at 82% -10%, rgba(46, 230, 178, 0.13), transparent 62%),
+    radial-gradient(900px 520px at 4% 0%, rgba(127, 178, 255, 0.09), transparent 58%),
+    radial-gradient(700px 700px at 50% 120%, rgba(46, 230, 178, 0.06), transparent 62%),
+    linear-gradient(rgba(120, 214, 190, 0.038) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 214, 190, 0.038) 1px, transparent 1px);
+  background-size: auto, auto, auto, 46px 46px, 46px 46px;
+  background-attachment: fixed, fixed, fixed, fixed, fixed;
+}
+
+/* 顶部一道极细的光带，暗示"正在监听" */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 1px;
+  z-index: 60;
+  background: linear-gradient(90deg, transparent, rgba(46, 230, 178, 0.65), rgba(127, 178, 255, 0.4), transparent);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+::selection {
+  background: rgba(46, 230, 178, 0.26);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #05090a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1d2f33;
+  border: 2px solid #070c0e;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2c4a4c;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------ 顶部导航 --- */
+
+.site-header {
+  background: rgba(6, 11, 13, 0.82);
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 18px 44px -30px rgba(0, 0, 0, 1);
+}
+
+.brand-mark,
+.brand-seal {
+  filter: none;
+}
+
+.main-nav button.is-active {
+  color: var(--green);
+  text-shadow: 0 0 18px rgba(46, 230, 178, 0.5);
+}
+
+.nav-count {
+  color: #04140f;
+  font-weight: 700;
+}
+
+/* 实心填充元素统一改用深墨字，避免亮底白字看不清 */
+.header-collect,
+.search-submit,
+.primary-button,
+.corpus-collect:hover:not(:disabled),
+.bp-start,
+.mode-switch button.is-active,
+.bp-window-switch button.is-active,
+.is-done .trace-dot,
+.compare-check.is-checked,
+.bp-grade.is-S,
+.bp-verdict-grade {
+  color: #04140f;
+  font-weight: 600;
+}
+
+.header-collect {
+  border-color: transparent;
+  box-shadow: var(--glow-green);
+  letter-spacing: 0.02em;
+}
+
+.header-collect:hover:not(:disabled) {
+  background: var(--green-2);
+}
+
+.search-submit:hover,
+.primary-button:hover {
+  background: var(--green-2);
+}
+
+/* ---------------------------------------------------------------- 卡片 --- */
+
+.panel,
+.card,
+.bp-meta-card,
+.bp-launch,
+.research-section,
+.decision-item,
+.policy-card,
+.pd-panel,
+.pd-section {
+  background-color: var(--paper-2);
+}
+
+/* 统一"玻璃板"质感：底部压暗 + 顶部一道内高光 */
+.bp-meta-card,
+.policy-card,
+.panel,
+.card {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 42%);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 24px 50px -32px rgba(0, 0, 0, 0.9);
+}
+
+/* ------------------------------------------------------------ 数字与标签 --- */
+
+.bp-meta-list dt,
+.corpus-stat span,
+.stat-label {
+  color: var(--muted-2);
+  font-family: var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bp-meta-list dd,
+.corpus-stat strong,
+.stat-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* ------------------------------------------------------------ 徽章体系 --- */
+
+.tone-badge.fact {
+  color: var(--green);
+  border-color: rgba(46, 230, 178, 0.32);
+  background: rgba(46, 230, 178, 0.1);
+}
+
+.tone-badge.observation {
+  color: var(--blue);
+  border-color: rgba(127, 178, 255, 0.3);
+  background: rgba(127, 178, 255, 0.1);
+}
+
+.tone-badge.inference {
+  color: var(--rust);
+  border-color: rgba(255, 143, 107, 0.3);
+  background: rgba(255, 143, 107, 0.1);
+}
+
+.type-fiscal {
+  color: var(--amber);
+  background: rgba(255, 194, 71, 0.1);
+  border-color: rgba(255, 194, 71, 0.3);
+}
+
+.type-monetary {
+  color: var(--blue);
+  background: rgba(127, 178, 255, 0.1);
+  border-color: rgba(127, 178, 255, 0.3);
+}
+
+.type-consumption {
+  color: #ffa084;
+  background: rgba(255, 160, 132, 0.1);
+  border-color: rgba(255, 160, 132, 0.3);
+}
+
+.type-livelihood {
+  color: #86e0a8;
+  background: rgba(134, 224, 168, 0.1);
+  border-color: rgba(134, 224, 168, 0.3);
+}
+
+.type-law {
+  color: var(--violet);
+  background: rgba(185, 165, 255, 0.1);
+  border-color: rgba(185, 165, 255, 0.3);
+}
+
+.type-industry {
+  color: #b9c7c0;
+  background: rgba(185, 199, 192, 0.09);
+  border-color: rgba(185, 199, 192, 0.26);
+}
+
+.source-primary {
+  color: var(--green);
+  border-color: rgba(46, 230, 178, 0.32);
+  background: rgba(46, 230, 178, 0.1);
+}
+
+.source-official {
+  color: var(--blue);
+  border-color: rgba(127, 178, 255, 0.3);
+  background: rgba(127, 178, 255, 0.1);
+}
+
+.source-media {
+  color: var(--amber);
+  border-color: rgba(255, 194, 71, 0.3);
+  background: rgba(255, 194, 71, 0.1);
+}
+
+/* 引用小按钮 */
+.citation-row button:hover {
+  color: var(--green);
+  border-color: var(--line-strong);
+  background: rgba(46, 230, 178, 0.07);
+}
+
+/* ------------------------------------------------------------ 表单控件 --- */
+
+input,
+textarea,
+select,
+.search-input,
+.search-bar input {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted-2);
+}
+
+input:focus,
+textarea:focus {
+  border-color: rgba(46, 230, 178, 0.5);
+  box-shadow: 0 0 0 3px rgba(46, 230, 178, 0.1);
+}
+
+/* ------------------------------------------------------------ 动画细节 --- */
+
+@keyframes hc-sweep {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+@keyframes hc-breathe {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* 主按钮：一道光周期性扫过，制造"系统在跑"的暗示 */
+.bp-start {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #4df3c6, #1fd3a1);
+  border: 0;
+  box-shadow: 0 0 0 1px rgba(46, 230, 178, 0.35), 0 18px 44px -16px rgba(46, 230, 178, 0.6);
+  transition: transform 0.16s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.bp-start::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: 0;
+  width: 42%;
+  height: 220%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: translateX(-120%) rotate(8deg);
+  animation: hc-sweep 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  pointer-events: none;
+}
+
+.bp-start:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 0 0 1px rgba(46, 230, 178, 0.5), 0 22px 54px -14px rgba(46, 230, 178, 0.75);
+}
+
+.bp-start:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.bp-start:disabled::after {
+  animation: none;
+  opacity: 0;
+}
+
+/* 头部"在线"指示点呼吸 */
+.pulse-ring::after {
+  animation: pulse 1.4s ease-in-out infinite, hc-breathe 2.4s ease-in-out infinite;
+}
+
+/* 进度条：加一点辉光，像信号在走 */
+.bp-score-bar i,
+.bp-province-bar i,
+.pd-channel-bar i {
+  box-shadow: 0 0 14px -2px rgba(46, 230, 178, 0.7);
+}
+
+/* 表格：暗底行分隔更淡，悬浮提亮 */
+tbody tr:hover,
+.policy-row:hover {
+  background: rgba(255, 255, 255, 0.028);
+}
+
+/* 地图：深色底上把省级色阶重新压暗，避免大片荧光绿 */
+.map-legend {
+  color: var(--muted);
+}
+
+/* 代码/文号等等宽元素 */
+.doc-no,
+.policy-docno,
+.kv-mono {
+  color: var(--blue);
+  font-family: var(--mono);
+}
+
+/* -------------------------------------------------- 浅色面板 → 深色浮层 --- */
+
+.public-item,
+.graph-detail,
+.ab-note,
+.aside-tip,
+.source-quote,
+.doc-chip,
+.compare-table thead th,
+.ab-head > span,
+.uncertainty-line {
+  background: rgba(255, 255, 255, 0.045);
+  border-color: var(--line);
+}
+
+.graph-detail {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 44px -30px rgba(0, 0, 0, 0.9);
+}
+
+.ab-head > span,
+.uncertainty-line {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.doc-chip {
+  color: var(--blue);
+  border-color: rgba(127, 178, 255, 0.28);
+  background: rgba(127, 178, 255, 0.09);
+}
+
+/* -------------------------------------------------- 警示面板 → 琥珀暗调 --- */
+
+.abstention-panel,
+.inline-warning,
+.comparability-note,
+.corpus-warning,
+.source-strip.is-offline {
+  background: rgba(255, 194, 71, 0.075);
+  border-color: rgba(255, 194, 71, 0.26);
+  color: #ffd894;
+}
+
+.abstention-icon {
+  background: rgba(255, 194, 71, 0.14);
+  color: var(--amber);
+}
+
+.abstention-next {
+  border-top: 1px solid rgba(255, 194, 71, 0.2);
+}
+
+/* -------------------------------------------------- 边框与状态色 --- */
+
+.source-pills span.is-ok {
+  border-color: rgba(46, 230, 178, 0.32);
+}
+
+.source-pills span.is-fail {
+  border-color: rgba(255, 143, 107, 0.34);
+  color: var(--rust);
+}
+
+.eyebrow-tag.is-live {
+  border-color: rgba(46, 230, 178, 0.36);
+  color: var(--green);
+  background: rgba(46, 230, 178, 0.08);
+}
+
+.auto-chip {
+  border-color: var(--line-strong);
+  background: rgba(46, 230, 178, 0.07);
+  color: var(--green);
+}
+
+.scope-item.is-checked,
+.compare-button.is-added {
+  border-color: rgba(46, 230, 178, 0.42);
+  background: rgba(46, 230, 178, 0.08);
+}
+
+.context-menu button:hover,
+.menu-item:hover {
+  background: rgba(46, 230, 178, 0.09);
+}
+
+/* 地图悬停：不要用米黄，改青绿高亮 */
+.map-region.is-scored:hover {
+  fill: #6ff0cd;
+}
+
+/* 条款标签的浅底 */
+.pd-ob-goal .pd-ob-tag {
+  background: rgba(127, 178, 255, 0.12);
+  color: var(--blue);
+}
+
+.pd-ob-ban .pd-ob-tag {
+  background: rgba(255, 143, 107, 0.12);
+  color: var(--rust);
+}
+
+.pd-ob-boost .pd-ob-tag {
+  background: rgba(255, 194, 71, 0.12);
+  color: var(--amber);
+}
+
+/* 底部对比托盘与提示条本身是深色块，字色保持浅 */
+.compare-tray,
+.toast,
+.demo-banner {
+  background: #0b1518;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  box-shadow: 0 26px 60px -20px rgba(0, 0, 0, 0.9);
+}
+
+.compare-tray p,
+.toast {
+  color: var(--ink-soft);
+}
+
+.tray-count {
+  color: var(--amber);
+}
+
+.tray-clear,
+.tray-clear:hover {
+  color: var(--green);
+}
+
+/* ---------------------------------------------------- 首页待机态雷达位 --- */
+
+@media (min-width: 1080px) {
+  .bp-launch {
+    grid-template-columns: minmax(0, 1fr) 356px;
+    gap: 48px;
+    align-items: stretch;
+  }
+
+  .bp-launch-copy {
+    align-self: center;
+  }
+}
+
+.bp-meta-card.is-radar {
+  padding: 16px 18px 13px;
+  display: flex;
+  align-items: center;
+}
+
+.bp-meta-card.is-radar .radar {
+  width: 100%;
+}
+
+/* 侧栏塌成整行时，雷达不要跟着横着铺开 */
+@media (max-width: 1079px) {
+  .bp-meta-card.is-radar {
+    justify-content: center;
+  }
+
+  .bp-meta-card.is-radar .radar {
+    max-width: 340px;
+    margin: 0 auto;
+  }
+}
+
+/* ---------------------------------------------------- 首页四张说明卡 --- */
+
+.bp-preview-grid {
+  counter-reset: bpcard;
+}
+
+.bp-preview-grid article {
+  counter-increment: bpcard;
+  position: relative;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 55%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bp-preview-grid article::before {
+  content: "0" counter(bpcard);
+  position: absolute;
+  top: 15px;
+  right: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: rgba(46, 230, 178, 0.5);
+}
+
+.bp-preview-grid article:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 18px 40px -28px rgba(46, 230, 178, 0.6);
+}
+
+.bp-preview-grid article svg {
+  color: var(--green);
+  filter: drop-shadow(0 0 10px rgba(46, 230, 178, 0.4));
+}

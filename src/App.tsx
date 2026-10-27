@@ -412,6 +412,8 @@ function App() {
       <div className={view === 'briefing' ? '' : 'is-view-hidden'}>
         <Briefing
           policies={corpusPolicies}
+          sources={corpus.sources}
+          corpusAt={corpus.updatedAt ?? ''}
           startSignal={scanSignal}
           onScan={scanNow}
           onOpenPolicy={setSelectedPolicyId}

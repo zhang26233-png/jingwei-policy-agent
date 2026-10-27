@@ -14,13 +14,14 @@ import {
   Timer,
 } from 'lucide-react';
 import type { ImpactResult, Policy } from '../types';
-import type { ScanOutcome } from '../lib/api';
+import type { ScanOutcome, SourceStatus } from '../lib/api';
 import { buildMechanism, combineDirection, type MechanismChain } from '../lib/mechanism';
 import { rankPolicies, type PriorityBoard } from '../lib/priority';
 import { buildRelations, RELATION_META, type RelationResult } from '../lib/relations';
 import { evaluateImpact } from '../lib/province';
 import { buildBriefingReport, downloadText } from '../lib/report';
 import { RelationGraph } from '../components/RelationGraph';
+import { SourceRadar } from '../components/SourceRadar';
 import './briefing.css';
 
 const DAY = 86400000;
@@ -53,6 +54,8 @@ interface LogLine {
 
 interface BriefingProps {
   policies: Policy[];
+  sources: SourceStatus[];
+  corpusAt: string;
   startSignal: number;
   onScan: (windowDays: number) => Promise<ScanOutcome>;
   onOpenPolicy: (id: string) => void;
@@ -61,7 +64,17 @@ interface BriefingProps {
   onGoLibrary: () => void;
 }
 
-export function Briefing({ policies, startSignal, onScan, onOpenPolicy, onGoImpact, onGoMethod, onGoLibrary }: BriefingProps) {
+export function Briefing({
+  policies,
+  sources,
+  corpusAt,
+  startSignal,
+  onScan,
+  onOpenPolicy,
+  onGoImpact,
+  onGoMethod,
+  onGoLibrary,
+}: BriefingProps) {
   const [phase, setPhase] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [windowDays, setWindowDays] = useState(90);
   const [stageIndex, setStageIndex] = useState(-1);
@@ -318,9 +331,18 @@ export function Briefing({ policies, startSignal, onScan, onOpenPolicy, onGoImpa
         </div>
 
         <div className="bp-launch-side">
+          {phase === 'idle' ? (
+            <div className="bp-meta-card is-radar">
+              <SourceRadar
+                sources={sources}
+                total={policies.length}
+                updatedAt={corpusAt}
+                windowDays={windowDays}
+              />
+            </div>
+          ) : (
           <div className="bp-meta-card">
             <span className="bp-meta-title">扫描结果</span>
-            {phase === 'idle' && <p className="bp-meta-empty">尚未扫描。点击左侧按钮开始，全流程约 5—15 秒。</p>}
             {phase === 'running' && (
               <p className="bp-meta-empty">
                 正在执行第 {Math.min(stageIndex + 1, STAGES.length)} / {STAGES.length} 步：{STAGES[Math.min(stageIndex, STAGES.length - 1)]?.label}
@@ -360,6 +382,7 @@ export function Briefing({ policies, startSignal, onScan, onOpenPolicy, onGoImpa
               </p>
             )}
           </div>
+          )}
         </div>
       </section>
 

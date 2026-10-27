@@ -25,3 +25,6 @@ dist-ssr
 
 # 采集运行产物（每次扫描重新生成）
 data/policies.json
+
+# 本地截图与验证产物
+.shots

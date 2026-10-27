@@ -1,0 +1,279 @@
+/* 信源雷达：首页待机态的仪表盘 */
+
+.radar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+}
+
+.radar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.radar-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: var(--green);
+  text-transform: uppercase;
+}
+
+.radar-live i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px 1px rgba(46, 230, 178, 0.9);
+  animation: hc-breathe 2s ease-in-out infinite;
+}
+
+.radar-window {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--muted-2);
+}
+
+/* ------------------------------------------------------------- 雷达本体 --- */
+
+.radar-stage {
+  position: relative;
+  width: 100%;
+  max-width: 252px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+}
+
+.radar-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.radar-ring {
+  fill: none;
+  stroke: rgba(120, 214, 190, 0.13);
+  stroke-width: 1;
+}
+
+.radar-axis {
+  stroke: rgba(120, 214, 190, 0.09);
+  stroke-width: 1;
+  stroke-dasharray: 2 5;
+}
+
+.radar-spoke {
+  stroke: rgba(120, 214, 190, 0.16);
+  stroke-width: 1;
+}
+
+.radar-dot {
+  fill: #33484a;
+  transition: fill 0.2s ease;
+}
+
+.radar-dot.is-ok {
+  fill: var(--green);
+  filter: drop-shadow(0 0 5px rgba(46, 230, 178, 0.85));
+}
+
+.radar-dot-halo {
+  fill: none;
+  stroke: rgba(46, 230, 178, 0.5);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: radar-ripple 2.6s ease-out infinite;
+}
+
+@keyframes radar-ripple {
+  0% { transform: scale(1); opacity: 0.8; }
+  70% { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+.radar-label {
+  fill: #7f948e;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.02em;
+}
+
+.radar-core {
+  fill: var(--green);
+}
+
+/* 扫描扇面：用 conic-gradient 做旋转光束，比 SVG 动画省事且更顺 */
+.radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(46, 230, 178, 0.34) 0deg,
+    rgba(46, 230, 178, 0.12) 24deg,
+    transparent 62deg,
+    transparent 360deg
+  );
+  mask-image: radial-gradient(circle at 50% 50%, transparent 12%, #000 24%, #000 78%, transparent 82%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 12%, #000 24%, #000 78%, transparent 82%);
+  animation: radar-spin 5.6s linear infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+@keyframes radar-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-sweep,
+  .radar-dot-halo,
+  .radar-live i {
+    animation: none;
+  }
+}
+
+.radar-center {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.radar-center strong {
+  font-family: var(--sans);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 26px rgba(46, 230, 178, 0.55);
+}
+
+.radar-center span {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+/* --------------------------------------------------------------- 图例 --- */
+
+.radar-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 12px;
+}
+
+.radar-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 10px;
+  color: var(--ink-soft);
+  min-width: 0;
+}
+
+.radar-legend li > i {
+  flex-shrink: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #3b4f50;
+}
+
+.radar-legend li > i.is-ok {
+  background: var(--green);
+  box-shadow: 0 0 7px rgba(46, 230, 178, 0.85);
+}
+
+.radar-legend li > span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.radar-legend li > b {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.radar-legend li.is-down > b {
+  color: var(--muted-2);
+}
+
+.radar-legend li.is-muted {
+  grid-column: 1 / -1;
+  color: var(--muted-2);
+  font-size: 10px;
+}
+
+.radar-foot {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: var(--muted-2);
+}
+
+.radar-tick {
+  stroke: rgba(120, 214, 190, 0.22);
+  stroke-width: 0.8;
+}
+
+.radar-center {
+  isolation: isolate;
+}
+
+.radar-center::before {
+  content: "";
+  position: absolute;
+  inset: -20px -30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(6, 11, 13, 0.94) 38%, rgba(6, 11, 13, 0) 74%);
+  z-index: -1;
+}
+
+.radar-center-num {
+  font-family: var(--sans);
+  font-size: 31px;
+  font-weight: 600;
+  line-height: 1;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 28px rgba(46, 230, 178, 0.6);
+}
+
+.radar-center-cap {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  margin-top: 3px;
+}

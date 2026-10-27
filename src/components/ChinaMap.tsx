@@ -29,7 +29,8 @@ function project(lon: number, lat: number) {
   return [rho * Math.sin(theta), RHO0 - rho * Math.cos(theta)] as [number, number];
 }
 
-const SCALE_COLORS = ['#e9ede5', '#c9dacf', '#a3c4b3', '#74a08d', '#4a7d6c', '#28564a'];
+// 深色底上的暴露度色阶：低→高 走 深墨青 → 信号青，避免低暴露省份被刷成白色块
+const SCALE_COLORS = ['#132a2d', '#1a3d3c', '#1d5a4e', '#218066', '#2ab68e', '#57f0c4'];
 const H = 560;
 const PAD = 10;
 const GAP = 14;
@@ -204,13 +205,13 @@ export function ChinaMap({
           const score = scoreByCode.get(shape.adcode);
           const isActive = activeCode === shape.adcode;
           const isSelected = selected === shape.adcode;
-          const fill = score ? colorFor(score.exposure) : '#e4e2d8';
+          const fill = score ? colorFor(score.exposure) : '#141f21';
           return (
             <path
               key={`${shape.adcode}-${shape.name}`}
               d={shape.d}
               fill={fill}
-              stroke={isSelected ? '#a45f3d' : isActive ? '#244f44' : '#fbf9f4'}
+              stroke={isSelected ? '#2ee6b2' : isActive ? '#4a7d74' : '#08100f'}
               strokeWidth={isSelected ? 2 : isActive ? 1.6 : 0.8}
               className={score ? 'map-region is-scored' : 'map-region'}
               onMouseEnter={() => setHover(shape.adcode)}
@@ -229,11 +230,11 @@ export function ChinaMap({
               y={inset.y}
               width={INSET.width}
               height={INSET.height}
-              fill="#f4f1e8"
-              stroke="#c9c2b2"
+              fill="#0b1416"
+              stroke="#24393c"
               strokeWidth="0.8"
             />
-            <path d={inset.d} fill="#dfe4da" stroke="#7c8c81" strokeWidth="1" strokeLinejoin="round" />
+            <path d={inset.d} fill="#101c1f" stroke="#2f4b4e" strokeWidth="1" strokeLinejoin="round" />
             <text x={inset.x + INSET.width / 2} y={inset.y + INSET.height - 5} textAnchor="middle" className="map-inset-label">
               南海诸岛
             </text>

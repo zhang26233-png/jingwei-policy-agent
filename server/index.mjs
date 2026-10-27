@@ -156,7 +156,15 @@ async function runCollection(options = {}) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
+  // 请求行里的路径可能是 "//"、"*" 或畸形串，new URL 会抛错。
+  // 这里必须兜住，否则单个畸形请求就能把整个服务进程打挂。
+  let url;
+  try {
+    url = new URL(req.url || '/', `http://${req.headers.host || '127.0.0.1'}`);
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end('bad request');
+  }
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
@@ -227,6 +235,16 @@ const server = http.createServer(async (req, res) => {
 });
 
 load();
+
+// 兜底：请求处理是 async 的，任何一处抛出都会变成 unhandledRejection，
+// Node 默认直接退出——演示时一个边角请求就能让整个服务消失。
+process.on('unhandledRejection', (error) => {
+  console.error('[server] 未处理的异步异常：', error);
+});
+process.on('uncaughtException', (error) => {
+  console.error('[server] 未捕获异常：', error);
+});
+
 server.listen(PORT, HOST, () => {
   console.log(`宏策智研服务已启动：http://${HOST}:${PORT}`);
   console.log(`语料：${getPolicies().length} 项；采集源：${SOURCES.length} 个`);
