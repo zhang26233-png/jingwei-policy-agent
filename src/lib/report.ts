@@ -1,4 +1,5 @@
 import type { AnalysisResult, ImpactResult, Policy } from '../types';
+import type { PolicyDigest } from './digest';
 import type { MechanismChain } from './mechanism';
 import type { PriorityBoard } from './priority';
 import type { RelationResult } from './relations';
@@ -109,11 +110,12 @@ export interface BriefingInput {
   relations: RelationResult;
   impact: ImpactResult;
   mechanisms: Record<string, MechanismChain[]>;
+  digests: PolicyDigest[];
   generatedAt: string;
 }
 
 export function buildBriefingReport(input: BriefingInput): string {
-  const { board, relations, impact, mechanisms } = input;
+  const { board, relations, impact, mechanisms, digests } = input;
   const date = new Date(input.generatedAt);
   const stamp = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   const lines: string[] = [
@@ -136,11 +138,32 @@ export function buildBriefingReport(input: BriefingInput): string {
     '',
     `> ${relations.combination.note}`,
     '',
-    '## 二、政策优先级排序',
+    '## 二、政策摘要',
     '',
-    '| 排名 | 等级 | 分数 | 政策 | 发文机关 | 发布日 | 预计时滞 |',
-    '| --- | --- | --- | --- | --- | --- | --- |',
+    '> 摘要由已抽取字段拼装，每句标注依据；字段抽不到即写"原文未写明"，未做语义补全。',
+    '',
   ];
+
+  digests.forEach((digest, index) => {
+    const item = board.ranked[index];
+    lines.push(`### 2.${index + 1} ${item?.policy.title ?? digest.id}（${item?.assessment.grade ?? '—'}／${item?.assessment.score ?? '—'} 分）`);
+    lines.push('');
+    lines.push(`**主旨**：${digest.headline}`);
+    lines.push('');
+    digest.sentences.forEach((sentence) => lines.push(`- **${sentence.label}**：${sentence.text}`));
+    lines.push('');
+    if (digest.points.length > 0) {
+      lines.push('**关键表述**：');
+      digest.points.forEach((point, pointIndex) => lines.push(`${pointIndex + 1}. 〔${point.tag}〕${point.text}`));
+      lines.push('');
+    }
+    if (digest.gaps.length > 0) lines.push(`- 摘要未覆盖：${digest.gaps.join('、')}`);
+    lines.push('');
+  });
+
+  lines.push('## 三、政策优先级排序', '');
+  lines.push('| 排名 | 等级 | 分数 | 政策 | 发文机关 | 发布日 | 预计时滞 |');
+  lines.push('| --- | --- | --- | --- | --- | --- | --- |');
 
   board.ranked.forEach((item, index) => {
     lines.push(
@@ -164,7 +187,7 @@ export function buildBriefingReport(input: BriefingInput): string {
     lines.push('');
   });
 
-  lines.push('## 三、作用机制与影响逻辑', '');
+  lines.push('## 四、作用机制与影响逻辑', '');
   board.ranked.slice(0, 3).forEach((item) => {
     const chains = mechanisms[item.policy.id] ?? [];
     if (chains.length === 0) return;
@@ -180,12 +203,21 @@ export function buildBriefingReport(input: BriefingInput): string {
       lines.push('');
       lines.push(`> ${chain.summary}`);
       if (chain.evidence) lines.push(`> 原文依据：${chain.evidence}`);
+      lines.push('');
+      lines.push('时间路径：');
+      chain.path.forEach((step) => lines.push(`- ${step.at}：${step.what}`));
+      lines.push('');
+      lines.push('观察指标：');
+      chain.watch.forEach((item) => lines.push(`- ${item.label}：${item.what}`));
+      lines.push('');
+      lines.push(`- 反向情景：${chain.counter}`);
+      lines.push(`- 失效判定：${chain.falsify}`);
       chain.risks.forEach((risk) => lines.push(`- 失效条件：${risk}`));
       lines.push('');
     });
   });
 
-  lines.push('## 四、政策相互关系', '');
+  lines.push('## 五、政策相互关系', '');
   lines.push(`组合方向：**${relations.combination.direction}**。${relations.combination.note}`);
   lines.push('');
   relations.narrative.forEach((line) => lines.push(`- ${line}`));
@@ -199,7 +231,7 @@ export function buildBriefingReport(input: BriefingInput): string {
   });
   lines.push('');
 
-  lines.push('## 五、省级影响（暴露度前八）', '');
+  lines.push('## 六、省级影响（暴露度前八）', '');
   lines.push('| 省份 | 暴露度 | 受益 | 承压 | 主要驱动 |');
   lines.push('| --- | --- | --- | --- | --- |');
   impact.provinces.slice(0, 8).forEach((province) => {
@@ -209,7 +241,7 @@ export function buildBriefingReport(input: BriefingInput): string {
   });
   lines.push('');
 
-  lines.push('## 六、方法与边界', '');
+  lines.push('## 七、方法与边界', '');
   lines.push('- 优先级：发文层级 22%、时效性 18%、力度强度 18%、覆盖广度 13%、约束强度 12%、政策信号 12%、新增信息 5%，加权后分级。');
   lines.push('- 机制链：由政策工具、传导渠道、作用对象与原文关键句推导，方向由表述倾向判定，时滞为定性区间。');
   lines.push('- 关系：依据同发文机关、同渠道、时间距离与方向异同推导，不等于发文机关确认的配套关系。');

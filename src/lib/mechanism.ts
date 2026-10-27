@@ -14,6 +14,16 @@ export interface MechanismLink {
   strength: 1 | 2 | 3;
 }
 
+export interface MechanismWatch {
+  label: string;
+  what: string;
+}
+
+export interface MechanismPathStep {
+  at: string;
+  what: string;
+}
+
 export interface MechanismChain {
   id: string;
   policyId: string;
@@ -26,6 +36,11 @@ export interface MechanismChain {
   evidence: string;
   summary: string;
   risks: string[];
+  // 以下四项回答"怎么验证这条链真的在发生"，缺了它们机制就只是说法。
+  watch: MechanismWatch[];
+  path: MechanismPathStep[];
+  counter: string;
+  falsify: string;
 }
 
 interface ChannelPath {
@@ -111,6 +126,91 @@ const CHANNEL_PATH: Record<ChannelId, ChannelPath> = {
     keywords: ['设备更新', '技改', '制造', '产业', '智能', '产能', '贴息', '改造'],
   },
 };
+
+// 每条渠道配一组"先行指标"与"反向情景"：机制链说完了不算完，得说清用什么数据能验证它，
+// 以及在什么情况下它会不成立。指标全部是公开发布的月度／季度口径，读者可自行核对。
+const WATCH_PATH: Record<ChannelId, { watch: MechanismWatch[]; counter: string }> = {
+  fiscal: {
+    watch: [
+      { label: '专项债发行进度', what: '看新增专项债发行额与投向基建占比，资金是否真的落到项目' },
+      { label: '基建投资当月同比', what: '统计局口径，看政策落地后 1—2 个季度是否抬升' },
+      { label: '水泥与螺纹钢表观消费', what: '实物工作量指标，比投资额更难被口径调整' },
+    ],
+    counter: '若专项债发行放量但基建投资同比未起、水泥消费继续走弱，说明资金滞留在拨付环节，链条断在"项目"这一段。',
+  },
+  transfer: {
+    watch: [
+      { label: '中央对地方转移支付下达进度', what: '看是否提前下达、是否直达市县' },
+      { label: '地方一般公共预算支出同比', what: '财力是否转化为实际支出而非结转' },
+      { label: '城投债净融资', what: '化债资源是否缓解平台流动性' },
+    ],
+    counter: '若转移支付已下达但地方支出同比仍负、清欠进度缓慢，说明财力被用于置换存量债务，未形成新增需求。',
+  },
+  credit: {
+    watch: [
+      { label: 'LPR 与贷款加权平均利率', what: '看政策利率是否传导到实体融资成本' },
+      { label: '企事业单位中长期贷款同比', what: '多增说明企业在加杠杆，少增说明需求不足' },
+      { label: '票据转贴现利率', what: '利率异常走低通常意味着信贷投放靠票据冲量' },
+    ],
+    counter: '若利率下行但中长期贷款同比少增、票据冲量明显，说明宽货币没有转成宽信用，链条断在"融资需求"。',
+  },
+  consumption: {
+    watch: [
+      { label: '社零总额当月同比', what: '剔除汽车后更接近常态化消费' },
+      { label: '以旧换新补贴核销进度', what: '补贴额度消耗速度决定政策有效期' },
+      { label: '居民消费倾向（支出/收入）', what: '看是需求前置还是真实意愿回升' },
+    ],
+    counter: '若补贴核销快、社零短期冲高但居民消费倾向未升，说明只是需求前置，退坡后会出现反向拖累。',
+  },
+  property: {
+    watch: [
+      { label: '30 城商品房成交面积', what: '高频周度数据，反应最快' },
+      { label: '个人住房贷款余额同比', what: '看居民是否真的加杠杆入市' },
+      { label: '二手房挂牌价指数', what: '价格预期是否止跌，比成交量更关键' },
+    ],
+    counter: '若成交量短期回升但二手房价继续下跌、房贷余额不增，说明是降价换量，投资端不会跟着修复。',
+  },
+  trade: {
+    watch: [
+      { label: '出口金额当月同比', what: '按美元计价，剔除基数效应看两年平均' },
+      { label: '出口集装箱运价指数', what: '量价同升才是真回暖' },
+      { label: '新出口订单 PMI', what: '领先出口 1—2 个月' },
+    ],
+    counter: '若出口同比靠抢出口或低基数支撑、运价与订单分项走弱，说明改善不可持续，链条受外需约束。',
+  },
+  private: {
+    watch: [
+      { label: '民间固定资产投资同比', what: '民营是否真的扩产，最直接的口径' },
+      { label: '小微企业贷款余额同比', what: '融资可得性是否实质改善' },
+      { label: '应收账款平均回收期', what: '清欠政策是否真的缩短账期' },
+    ],
+    counter: '若贷款余额增长但民间投资同比继续负增长，说明企业拿到钱后不投资，困在预期而非资金。',
+  },
+  welfare: {
+    watch: [
+      { label: '城镇调查失业率', what: '含 16—24 岁青年失业率分项' },
+      { label: '居民人均可支配收入同比', what: '收入不增则消费刺激难生效' },
+      { label: '社保基金支出增速', what: '保障性支出是否实际扩张' },
+    ],
+    counter: '若补贴已发放但失业率与收入增速未改善，说明补贴规模相对收入基数偏小，只能托底不能拉动。',
+  },
+  industry: {
+    watch: [
+      { label: '制造业投资同比', what: '设备更新政策的直接落点' },
+      { label: '设备工器具购置投资同比', what: '比制造业投资更贴近"更新"口径' },
+      { label: '工业机器人产量', what: '产线改造的实物证据' },
+    ],
+    counter: '若贴息额度用满但设备购置投资同比回落，说明企业自有资金配套能力不足，中小企业被挤出。',
+  },
+};
+
+const TIME_PATH = (latency: string): MechanismPathStep[] => [
+  { at: 'T+0', what: '文件印发，执行口径与资金额度明确，市场先反应预期' },
+  { at: 'T+1 个月', what: '实施细则与项目清单下达，主体开始申报或调整计划' },
+  { at: latency.includes('即时') ? 'T+1 个季度' : 'T+1—2 个季度', what: '中间变量出现可观测变化（价格、额度、订单）' },
+  { at: 'T+2—4 个季度', what: '宏观结果落表，此时才能判断方向是否成立' },
+];
+
 
 const TOOL_VERB = /(补贴|贴息|降准|降息|专项债|债券|转移支付|投资|减税|退税|减免|贷款|再贷款|补助|奖励|试点|更新|改造|建设|发行|下达|扩大|提高|降低|支持|新增|设立|安排|取消|下调)/;
 const TOOL_NOISE = /(源头到|末端|有关|原则上|机制|工作|情况|问题|通知|附件)/;
@@ -229,6 +329,8 @@ export function buildMechanism(policy: Policy): MechanismChain[] {
 
     const summary = `以「${links[0].label}」为起点，作用于「${path.variable[key]}」，推动主体行为转向「${path.behavior[key]}」，最终体现为「${path.outcome[key]}」；方向判定为${directionLabel}，预计时滞 ${path.latency}。`;
 
+    const watchMeta = WATCH_PATH[channel.id];
+
     return {
       id: `${policy.id}-${channel.id}`,
       policyId: policy.id,
@@ -244,8 +346,62 @@ export function buildMechanism(policy: Policy): MechanismChain[] {
         polarity === 0
           ? ['原文以程序性、倡导性表述为主，方向不明确时不应计入受益或承压', path.risk]
           : [path.risk],
+      watch: watchMeta.watch,
+      path: TIME_PATH(path.latency),
+      counter: watchMeta.counter,
+      falsify:
+        polarity === 0
+          ? '当前方向未定，任何"受益／承压"结论都不成立，需等到有明确资金或指标口径的文件再判。'
+          : `若 ${path.latency} 内观察指标没有出现同向变化，应判定这条链未生效，而不是继续等待。`,
     };
   });
+}
+
+// 机制全景：不止解读一条政策，把本期前排政策的"主链"压成一张可横向对比的表。
+// 一张表回答的是"这批政策分别从哪条路径发力、谁快谁慢"。
+export interface MechanismBoardRow {
+  policyId: string;
+  shortTitle: string;
+  grade: string;
+  score: number;
+  channelId: ChannelId;
+  channelName: string;
+  directionLabel: string;
+  polarity: 1 | -1 | 0;
+  latency: string;
+  variable: string;
+  outcome: string;
+  evidence: string;
+  chainCount: number;
+}
+
+export function buildMechanismBoard(
+  items: { policy: Policy; grade: string; score: number }[],
+  chainsByPolicy: Record<string, MechanismChain[]>,
+): MechanismBoardRow[] {
+  const rows: MechanismBoardRow[] = [];
+  for (const item of items) {
+    const chains = chainsByPolicy[item.policy.id] ?? [];
+    if (chains.length === 0) continue;
+    // 主链 = 强度最高、渠道权重最大的那一条，与详情里的第一张卡保持一致。
+    const primary = chains[0];
+    rows.push({
+      policyId: item.policy.id,
+      shortTitle: item.policy.shortTitle || item.policy.title,
+      grade: item.grade,
+      score: item.score,
+      channelId: primary.channelId,
+      channelName: primary.channelName,
+      directionLabel: primary.directionLabel,
+      polarity: primary.polarity,
+      latency: primary.latency,
+      variable: primary.links[1]?.label ?? '—',
+      outcome: primary.links[3]?.label ?? '—',
+      evidence: primary.evidence,
+      chainCount: chains.length,
+    });
+  }
+  return rows;
 }
 
 export function combineDirection(chains: MechanismChain[]): string {

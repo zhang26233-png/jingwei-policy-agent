@@ -36,12 +36,23 @@ export interface RelationCluster {
   policyIds: string[];
   direction: '扩张' | '收紧' | '混合';
   note: string;
+  members: { id: string; short: string; grade: string; polarity: 1 | -1 | 0 }[];
+}
+
+export interface RelationStat {
+  kind: RelationKind;
+  label: string;
+  color: string;
+  count: number;
+  share: number;
+  desc: string;
 }
 
 export interface RelationResult {
   nodes: RelationNode[];
   edges: RelationEdge[];
   clusters: RelationCluster[];
+  stats: RelationStat[];
   combination: {
     direction: string;
     expansive: number;
@@ -51,6 +62,8 @@ export interface RelationResult {
   };
   narrative: string[];
   caveats: string[];
+  // 用来交代"留了多少、滤了多少"，避免读者以为本期只有这几组关系。
+  coverage: { nodes: number; pairs: number; kept: number; dropped: number };
 }
 
 export const RELATION_META: Record<RelationKind, { label: string; color: string; dash: string; desc: string }> = {
@@ -101,9 +114,11 @@ export function buildRelations(items: RankedPolicy[]): RelationResult {
   });
 
   const edges: RelationEdge[] = [];
+  let pairs = 0;
 
   for (let i = 0; i < scoped.length; i += 1) {
     for (let j = i + 1; j < scoped.length; j += 1) {
+      pairs += 1;
       const a = scoped[i];
       const b = scoped[j];
       const nodeA = nodes[i];
@@ -204,12 +219,18 @@ export function buildRelations(items: RankedPolicy[]): RelationResult {
     .map(([id, policyIds]) => {
       const ups = policyIds.filter((pid) => nodes.find((node) => node.id === pid)?.polarity === 1).length;
       const downs = policyIds.filter((pid) => nodes.find((node) => node.id === pid)?.polarity === -1).length;
+      const members = policyIds
+        .map((pid) => nodes.find((node) => node.id === pid))
+        .filter((node): node is RelationNode => Boolean(node))
+        .sort((x, y) => y.score - x.score)
+        .map((node) => ({ id: node.id, short: node.short, grade: node.grade, polarity: node.polarity }));
       return {
         id,
         label: channelName(id),
         policyIds,
         direction: (ups > 0 && downs > 0 ? '混合' : downs > 0 ? '收紧' : '扩张') as RelationCluster['direction'],
         note: `${policyIds.length} 项政策主要作用于该渠道`,
+        members,
       };
     })
     .sort((a, b) => b.policyIds.length - a.policyIds.length);
@@ -275,10 +296,25 @@ export function buildRelations(items: RankedPolicy[]): RelationResult {
     );
   }
 
+  const stats: RelationStat[] = (Object.keys(RELATION_META) as RelationKind[])
+    .map((kind) => {
+      const count = kept.filter((edge) => edge.kind === kind).length;
+      return {
+        kind,
+        label: RELATION_META[kind].label,
+        color: RELATION_META[kind].color,
+        count,
+        share: kept.length > 0 ? count / kept.length : 0,
+        desc: RELATION_META[kind].desc,
+      };
+    })
+    .sort((a, b) => b.count - a.count);
+
   return {
     nodes,
     edges: kept,
     clusters,
+    stats,
     combination: { direction, expansive, restrictive, neutral, note },
     narrative,
     caveats: [
@@ -286,5 +322,6 @@ export function buildRelations(items: RankedPolicy[]): RelationResult {
       '同一政策可同时存在多类关系，图中只显示强度最高的一类。',
       '关系强度是相对排序指标（0—1），不是相关系数。',
     ],
+    coverage: { nodes: nodes.length, pairs, kept: kept.length, dropped: edges.length - kept.length },
   };
 }
