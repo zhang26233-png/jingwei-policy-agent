@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, Loader2, RefreshCw } from 'lucide-react';
-import { fetchAudit, type AuditField, type AuditResponse } from '../lib/api';
+import { AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, FileText, Loader2, RefreshCw } from 'lucide-react';
+import { backfillAttachments, fetchAudit, type AuditField, type AuditResponse } from '../lib/api';
 import './audit.css';
 
 const REASON_META: Record<string, { label: string; tone: string; hint: string }> = {
@@ -138,6 +138,9 @@ export function AuditView({ onOpenPolicy }: AuditViewProps) {
         「受检结论句」指摘要、量化目标、条款分类里所有对外展示的句子。整句命中原名意味着页面上没有任何自由生成的文字——
         这是本系统与大模型生成式解读的根本差别。{traceability.untraceablePolicy > 0 && `另有 ${traceability.untraceablePolicy} 条政策正文过短（附件为主），未纳入本次核对。`}
       </p>
+
+      {/* ---------- 附件解析台账 ---------- */}
+      {data.attachments && <AttachmentPanel data={data} onReload={() => void load()} onOpenPolicy={onOpenPolicy} />}
 
       {/* ---------- 字段台账 ---------- */}
       <div className="audit-section-head">
@@ -322,5 +325,105 @@ function Stat({ value, unit, label, hint }: { value: number; unit: string; label
       <strong>{label}</strong>
       <small>{hint}</small>
     </div>
+  );
+}
+
+/**
+ * 附件解析台账。
+ * 只报四件事：多少条正文是从 PDF 里补回来的、补了多少字、多少条解析不了（卡在哪）、
+ * 多少条只是挂了清单附表。第四类看着像缺口，其实正文本来完整，必须与第三类分开说。
+ */
+function AttachmentPanel({
+  data,
+  onReload,
+  onOpenPolicy,
+}: {
+  data: AuditResponse;
+  onReload: () => void;
+  onOpenPolicy: (id: string) => void;
+}) {
+  const meta = data.attachments;
+  const [busy, setBusy] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
+  if (!meta) return null;
+
+  const rescan = async () => {
+    setBusy(true);
+    setFlash(null);
+    try {
+      const result = await backfillAttachments(true);
+      setFlash(`已回源重扫 ${result.checked} 条：${result.filled} 条正文附件解析并入，新增 ${result.gained.toLocaleString('zh-CN')} 字。`);
+      onReload();
+    } catch (error) {
+      setFlash(error instanceof Error ? error.message : '重扫失败');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="audit-section-head">
+        <h2>附件解析</h2>
+        <p>
+          政府文件的实体内容常只放在附件 PDF 里，网页上只剩一纸「现印发给你们」。
+          这一层把附件读成文本并入正文，并如实标出读不出来的那一部分。
+        </p>
+      </div>
+
+      <div className="audit-attach">
+        <div className="audit-attach-stats">
+          <div>
+            <b>{meta.parsed}</b>
+            <span>条正文来自 PDF 附件</span>
+            <small>占政策文件 {Math.round((meta.parsed / Math.max(1, meta.total)) * 100)}%</small>
+          </div>
+          <div>
+            <b>{meta.chars.toLocaleString('zh-CN')}</b>
+            <span>补入正文字数</span>
+            <small>含章节、指标与任务分工</small>
+          </div>
+          <div className={meta.blocked.length > 0 ? 'is-warn' : ''}>
+            <b>{meta.blocked.length}</b>
+            <span>条附件未并入正文</span>
+            <small>{meta.blocked.length > 0 ? '逐条原因见下' : '没有读不出的附件'}</small>
+          </div>
+          <div>
+            <b>{meta.annexOnly}</b>
+            <span>条只挂清单类附件</span>
+            <small>正文本身完整，附表不计入</small>
+          </div>
+        </div>
+
+        {meta.blocked.length > 0 && (
+          <ul className="audit-attach-blocked">
+            {meta.blocked.map((item) => (
+              <li key={item.id}>
+                <span className="audit-tag is-warn">未解析</span>
+                <button type="button" className="audit-missing-title" onClick={() => onOpenPolicy(item.id)}>
+                  {item.title}
+                  <ArrowRight size={12} />
+                </button>
+                <span className="audit-attach-reason">
+                  <FileText size={11} /> {item.reason}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="audit-attach-foot">
+          <p>
+            解析口径：只并「与文件同名」的 PDF，且必须是行文成篇的正文；
+            清单、名单、表格型附件只登记不并入，避免把渠道关键词密度算歪。
+          </p>
+          <button type="button" className="audit-refresh" onClick={() => void rescan()} disabled={busy}>
+            {busy ? <Loader2 size={13} className="spin" /> : <RefreshCw size={13} />}
+            {busy ? '回源解析中……' : '回源重扫附件'}
+          </button>
+        </div>
+        {flash && <p className="audit-attach-flash">{flash}</p>}
+      </div>
+    </>
   );
 }

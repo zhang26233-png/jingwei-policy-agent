@@ -260,7 +260,17 @@ function makeSummary(cleaned, limit) {
   return slice;
 }
 
-export function extractPolicy({ title, text, issuer, date, url, sourceName, sourceLevel }) {
+export function extractPolicy({
+  title,
+  text,
+  issuer,
+  date,
+  url,
+  sourceName,
+  sourceLevel,
+  attachments = [],
+  attachmentText = '',
+}) {
   const body = `${title}\n${text}`;
   const per1000 = (keywords) => countHits(body, keywords) / Math.max(1, body.length / 1000);
   const channels = classifyChannels(body);
@@ -290,7 +300,7 @@ export function extractPolicy({ title, text, issuer, date, url, sourceName, sour
   const topChannels = channels.filter((channel) => channel.hits > 0).slice(0, 3);
   const docType = classifyDocType(title);
   const titleKey = title.replace(/\s+/gu, '');
-  const paragraphs = buildParagraphs(text, 9000);
+  const paragraphs = buildParagraphs(text, 14000);
 
   // 摘要不要从"标题+文号+主送机关"里截，那样每一行开头都是重复的公文抬头。
   // 取正文里第一条长度足够、且不是抬头/落款的段落。
@@ -336,8 +346,11 @@ export function extractPolicy({ title, text, issuer, date, url, sourceName, sour
     sections: extractSections(text),
     scope,
     paragraphs,
-    attachmentOnly: detectAttachmentOnly(text),
-    fullText: cleaned.slice(0, 6000),
+    attachmentOnly: detectAttachmentOnly(text, attachments),
+    attachments,
+    bodySource: attachmentText ? 'page+pdf' : 'page',
+    // 全文用于可回溯率核算：必须覆盖所有派生句的出处，否则长文件（规划类附件）会出现假失败
+    fullText: cleaned.slice(0, 20000),
     sourceName,
     sourceUrl: url,
     sourceLevel,
@@ -591,10 +604,26 @@ export function buildParagraphs(text, maxChars = 8000) {
 
 // 政府文件的核心内容常常只在附件 PDF 里，网页正文只有一纸通知。
 // 这类条目不该假装"内容完整"，在详情页要明确标出来。
-export function detectAttachmentOnly(text) {
+//
+// 判定改成三态，比原来"短 + 提到附件"更准：
+//   ① 认出了正文附件但没读出来（扫描件、OFD）→ 确实是缺口；
+//   ② 正文附件已解析进正文 → 不是缺口；
+//   ③ 只挂清单类附件（名单／表格）→ 正文本身是完整的，清单只是附表，不算缺口。
+export function detectAttachmentOnly(text, attachments = []) {
   const source = String(text || '');
+  const list = Array.isArray(attachments) ? attachments : [];
   if (source.length > 1200) return false;
-  return /附件|详见|见附件|印发给你们/.test(source);
+
+  if (list.some((item) => item.role === 'main' && item.ok)) return false;
+  if (list.some((item) => item.role === 'main' && !item.ok)) return true;
+
+  const annex = list.filter((item) => item.role === 'annex');
+  if (annex.length > 0) {
+    // 通知类文件正文可能只有"现印发给你们"一句，此时清单就是全部实体内容
+    return source.length < 240;
+  }
+  // 页面上找不到任何附件链接：无法证实正文另有所在，不再凭空标记
+  return false;
 }
 
 // 政府文件的骨架是"一、总体要求 / 二、重点任务 / 三、保障措施"这类章节。

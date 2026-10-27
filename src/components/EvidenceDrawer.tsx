@@ -178,8 +178,46 @@ export function EvidenceDrawer({
               <span>
                 <AlertTriangle size={13} /> 内容边界
               </span>
-              该页面正文只有通知本身，实施方案或清单以附件（PDF/OFD）形式发布，系统未解析附件内容。
+              该页面正文只有通知本身，实施方案或清单以附件（PDF/OFD）形式发布，系统未能解析附件内容。
               需要完整条款请点下方原文链接查看附件。
+            </div>
+          )}
+
+          {(policy.attachments?.length ?? 0) > 0 && (
+            <div className="pd-attach">
+              <div className="pd-attach-head">
+                <FileText size={12} />
+                <span>附件</span>
+                {policy.bodySource === 'page+pdf' && <em>正文已从 PDF 并入</em>}
+              </div>
+              <ul>
+                {policy.attachments!.map((item) => {
+                  // 只有「判定为正文 + 解析成功 + 不是表格」才算真的并进了正文，其余都要标出来
+                  const merged = item.role === 'main' && item.ok && item.layout !== 'table';
+                  const label =
+                    item.role === 'main'
+                      ? merged
+                        ? '正文'
+                        : item.ok
+                          ? '附表'
+                          : '正文未读'
+                      : item.role === 'annex'
+                        ? '清单'
+                        : '其他格式';
+                  return (
+                    <li key={item.url}>
+                      <span className={`pd-attach-role is-${merged ? 'ok' : item.ok ? 'plain' : 'fail'}`}>{label}</span>
+                      <a href={item.url} target="_blank" rel="noreferrer">
+                        {item.name}
+                        <ExternalLink size={10} />
+                      </a>
+                      <span className="pd-attach-meta">
+                        {item.error ? item.error : `${item.pages} 页 · ${item.chars.toLocaleString('zh-CN')} 字`}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           )}
 

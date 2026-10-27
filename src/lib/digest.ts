@@ -327,11 +327,16 @@ export function buildDigest(policy: Policy): PolicyDigest {
   if (sectionCount > 0) structure.push(`${sectionCount} 个章节`);
   if ((policy.clauses ?? []).length > 0) structure.push(`${policy.clauses.length} 条可引条款`);
   if ((policy.bodyLength ?? 0) > 0) structure.push(`正文 ${policy.bodyLength} 字`);
+  const sourceNote = policy.attachmentOnly
+    ? '；主体内容在附件中，未能解析'
+    : policy.bodySource === 'page+pdf'
+      ? '；已并入 PDF 附件正文'
+      : '';
   sentences.push({
     label: '文本结构',
     text:
       structure.length > 0
-        ? `原文可拆出 ${structure.join('、')}${policy.attachmentOnly ? '；主体内容在附件（PDF／OFD）中，尚未解析' : ''}。`
+        ? `原文可拆出 ${structure.join('、')}${sourceNote}。`
         : '原文结构无法拆分（可能是短公告或附件为主），摘要只能依据首段。',
     basis: '章节／条款／篇幅',
   });

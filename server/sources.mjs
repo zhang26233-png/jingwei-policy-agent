@@ -1,6 +1,7 @@
 // 官方来源适配器：每个源独立可失败，失败只影响自身，不影响整体采集。
 // 采集分两阶段：先并发取各源列表（廉价、可全量），再按配额并发抓正文（昂贵、需限流）。
 import { fetchHtml, fetchJson, extractArticle, decodeEntities, absUrl, parseDate, mapLimit } from './net.mjs';
+import { readAttachments } from './pdf.mjs';
 
 const NOISE = /^(English Version|登录|注册|首页|返回|更多|下一页|上一页|网站地图|联系我们)$/;
 
@@ -216,20 +217,38 @@ export async function fetchArticles(items, { limit = 60, concurrency = 5 } = {})
   const bgQuota = Math.min(background.length, Math.max(6, Math.round(limit * 0.2)));
   const queue = [...primary.slice(0, Math.max(0, limit - bgQuota)), ...background.slice(0, bgQuota)];
 
+  // 网页正文短于这个长度，就去翻同页附件：多数印发通知的实际内容都在 PDF 里。
+  const THIN_BODY = 900;
+
   const rows = await mapLimit(queue, concurrency, async (item) => {
     const source = SOURCE_BY_ID.get(item.sourceId);
     let text = '';
     let fetchError = null;
+    let attachments = [];
+    let attachmentText = '';
     try {
       const page = await fetchHtml(item.url, { timeout: 14000 });
       text = extractArticle(page);
+      if (text.length < THIN_BODY) {
+        try {
+          const parsed = await readAttachments({ html: page, baseUrl: item.url, title: item.title });
+          attachments = parsed.attachments;
+          attachmentText = parsed.bodyText;
+        } catch (caught) {
+          fetchError = fetchError ?? `附件解析失败：${caught.message}`;
+        }
+      }
     } catch (caught) {
       fetchError = caught.message;
     }
+    // 附件正文接在网页正文之后：网页仍是权威抬头（文号、印发语），附件补的是实体内容。
+    const merged = attachmentText ? `${text}\n${attachmentText}`.slice(0, 16000) : text;
     return {
       ...item,
       date: item.date || parseDate(text) || '',
-      text,
+      text: merged,
+      attachments,
+      attachmentText,
       sourceName: source?.name || item.sourceId,
       sourceLevel: source?.level || '政策原文',
       org: source?.org || '',

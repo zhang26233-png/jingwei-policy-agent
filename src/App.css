@@ -4365,6 +4365,111 @@ a {
   font-weight: 600;
 }
 
+/* 附件登记：正文附件与清单附件必须一眼分得开，否则读者会以为清单也是政策条款 */
+.pd-attach {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.015);
+  margin: 14px 0 4px;
+  overflow: hidden;
+}
+
+.pd-attach-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pd-attach-head em {
+  font-style: normal;
+  letter-spacing: 0;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  color: var(--green);
+  opacity: 0.85;
+}
+
+.pd-attach ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pd-attach li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+
+.pd-attach li:last-child {
+  border-bottom: none;
+}
+
+.pd-attach-role {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--line-strong);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.pd-attach-role.is-ok {
+  border-color: rgba(46, 230, 178, 0.4);
+  color: var(--green);
+}
+
+.pd-attach-role.is-plain {
+  color: var(--muted);
+}
+
+.pd-attach-role.is-fail {
+  border-color: rgba(255, 143, 107, 0.4);
+  color: var(--rust, #ff8f6b);
+}
+
+.pd-attach a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: var(--ink-soft);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pd-attach a:hover {
+  color: var(--green);
+}
+
+.pd-attach-meta {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 640px) {
+  .pd-attach-meta {
+    display: none;
+  }
+}
+
 .pd-statbar {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4840,6 +4945,11 @@ a {
 
 .row-depth .depth-warn {
   color: var(--rust);
+}
+
+.row-depth .depth-ok {
+  color: var(--green);
+  opacity: 0.8;
 }
 
 /* ---------- 信源接入审计 ---------- */

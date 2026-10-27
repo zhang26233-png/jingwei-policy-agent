@@ -92,7 +92,23 @@ export interface Policy {
   scope?: PolicyScope;
   paragraphs?: string[];
   attachmentOnly?: boolean;
+  bodySource?: 'page' | 'page+pdf';
+  attachments?: PolicyAttachment[];
   fullText?: string;
+}
+
+/** 附件登记：role=main 表示判定为正文，annex 表示清单／名单类附表 */
+export interface PolicyAttachment {
+  name: string;
+  url: string;
+  ext: string;
+  role: 'main' | 'annex' | 'other';
+  ok: boolean;
+  pages: number;
+  chars: number;
+  layout?: 'prose' | 'table' | null;
+  reason?: string;
+  error: string | null;
 }
 
 export interface EvidenceRef {

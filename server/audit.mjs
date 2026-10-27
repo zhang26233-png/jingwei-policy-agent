@@ -227,6 +227,45 @@ export function buildAudit(policies) {
 
   const attachmentOnly = docs.filter((policy) => policy.attachmentOnly).length;
 
+  // ---- 附件解析台账 ----
+  // 政府文件常把正文放在 PDF 附件里。这里把"已补全 / 受阻 / 只有清单 / 无附件"四态分开记，
+  // 因为它们的含义完全不同：只有"受阻"是真的缺口，"只有清单"说明正文本来就是完整的。
+  const attachments = (() => {
+    const parsedDocs = docs.filter((policy) => policy.bodySource === 'page+pdf');
+    const blocked = [];
+    let annexOnly = 0;
+    let noAttachment = 0;
+    for (const policy of docs) {
+      const list = policy.attachments ?? [];
+      const main = list.find((item) => item.role === 'main');
+      // 读不出（DOC/超大/扫描件）与读出来是表格，都不算"已并入正文"，统一进受阻清单，
+      // 这样四类互斥、加起来等于政策文件总数，不会漏账。
+      if (main && (!main.ok || main.layout === 'table')) {
+        blocked.push({
+          id: policy.id,
+          title: policy.title,
+          reason: main.error || '未并入正文',
+          name: main.name,
+        });
+        continue;
+      }
+      if (main && main.ok) continue; // 已并入正文，前面统计过
+      if (list.some((item) => item.role === 'annex')) annexOnly += 1;
+      else if (list.length === 0) noAttachment += 1;
+    }
+    return {
+      parsed: parsedDocs.length,
+      chars: parsedDocs.reduce(
+        (sum, policy) => sum + (policy.attachments ?? []).filter((item) => item.role === 'main').reduce((acc, item) => acc + (item.chars || 0), 0),
+        0,
+      ),
+      blocked,
+      annexOnly,
+      noAttachment,
+      total,
+    };
+  })();
+
   return {
     generatedAt: new Date().toISOString(),
     corpus: {
@@ -239,6 +278,7 @@ export function buildAudit(policies) {
         to: all.reduce((max, policy) => (policy.date && policy.date > max ? policy.date : max), ''),
       },
     },
+    attachments,
     fields,
     traceability: {
       checked,
@@ -254,11 +294,11 @@ export function buildAudit(policies) {
     },
     structure,
     // 供页面直接显示的判定，避免前端各自解释口径
-    verdict: buildVerdict({ fields, traceRate, attachmentOnly, total }),
+    verdict: buildVerdict({ fields, traceRate, attachmentOnly, total, attachments }),
   };
 }
 
-function buildVerdict({ fields, traceRate, attachmentOnly, total }) {
+function buildVerdict({ fields, traceRate, attachmentOnly, total, attachments }) {
   // 判「该不该修」只看 ruleRate：分母排除"原文本来就没写"和"正文在附件"两种情况，
   // 否则会把文件本身的性质算成系统缺陷，为了数字好看去硬抽，反而制造错误。
   const weak = fields.filter((field) => field.ruleRate < 70);
@@ -274,8 +314,17 @@ function buildVerdict({ fields, traceRate, attachmentOnly, total }) {
   notes.push(
     `全部空位共归因：原文确实没写 ${notInSource} 处、正文在附件 ${inAttachment} 处、疑似漏抽 ${suspect} 处——只有最后一类算系统缺陷。`,
   );
+  if (attachments.parsed > 0) {
+    notes.push(
+      `${attachments.parsed} 条政策的实体内容原本只在 PDF 附件里，已解析并入正文（共补入 ${attachments.chars.toLocaleString('zh-CN')} 字）。`,
+    );
+  }
+  if (attachments.blocked.length > 0) {
+    const reasons = [...new Set(attachments.blocked.map((item) => item.reason))].join('；');
+    notes.push(`另有 ${attachments.blocked.length} 条正文附件未能解析：${reasons}。属已知缺口，不假装已覆盖。`);
+  }
   if (attachmentOnly > 0) {
-    notes.push(`${attachmentOnly} 条政策正文在 PDF／OFD 附件里，当前不解析，属结构性缺口。`);
+    notes.push(`${attachmentOnly} 条政策仍标记为"正文在附件"，其字段缺失不计入漏抽统计。`);
   }
   return {
     level: traceRate >= 95 && suspect === 0 ? 'ok' : traceRate >= 90 ? 'fair' : 'risk',

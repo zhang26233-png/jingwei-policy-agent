@@ -117,6 +117,23 @@ export interface AuditField {
   missingInAttachment: number;
 }
 
+export interface AuditAttachmentBlocked {
+  id: string;
+  title: string;
+  reason: string;
+  name: string;
+}
+
+/** 附件解析台账：正文在 PDF 里的，哪些已并入、哪些解析不了 */
+export interface AuditAttachments {
+  parsed: number;
+  chars: number;
+  blocked: AuditAttachmentBlocked[];
+  annexOnly: number;
+  noAttachment: number;
+  total: number;
+}
+
 export interface AuditResponse {
   generatedAt: string;
   corpus: {
@@ -126,6 +143,7 @@ export interface AuditResponse {
     attachmentOnly: number;
     dates: { from: string; to: string };
   };
+  attachments?: AuditAttachments;
   fields: AuditField[];
   traceability: {
     checked: number;
@@ -159,4 +177,20 @@ export interface AuditResponse {
 
 export function fetchAudit() {
   return request<AuditResponse>('/api/audit', undefined, 30000);
+}
+
+export interface BackfillResult {
+  checked: number;
+  filled: number;
+  gained: number;
+  rows: { id: string; title: string; status: string; note: string }[];
+}
+
+/** 回源重读附件：all=true 时对整库重解析（抽取规则或正文上限调整后用） */
+export function backfillAttachments(all = false) {
+  return request<BackfillResult>(
+    '/api/attachments/backfill',
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ all }) },
+    180000,
+  );
 }

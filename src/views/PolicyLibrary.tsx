@@ -274,6 +274,7 @@ export function PolicyLibrary({
                   )}
                   {(policy.paragraphs?.length ?? 0) > 0 && <span>{policy.paragraphs!.length} 段原文</span>}
                   {policy.attachmentOnly && <span className="depth-warn">主体在附件</span>}
+                  {policy.bodySource === 'page+pdf' && <span className="depth-ok">含PDF正文</span>}
                 </div>
                 <div className="row-mobile-meta">
                   <TypeBadges types={policy.instrumentTypes} />

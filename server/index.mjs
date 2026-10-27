@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { SOURCES, fetchLists, fetchArticles } from './sources.mjs';
 import { extractPolicy } from './extract.mjs';
 import { buildAudit } from './audit.mjs';
+import { readAttachments } from './pdf.mjs';
+import { fetchHtml, extractArticle, mapLimit } from './net.mjs';
 import { load, save, getPolicies, upsertPolicies, recordRun, summary } from './store.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -112,11 +114,15 @@ async function runCollection(options = {}) {
       url: item.url,
       sourceName: item.sourceName,
       sourceLevel: item.sourceLevel,
+      attachments: item.attachments ?? [],
+      attachmentText: item.attachmentText ?? '',
     });
     if (!policy.date) policy.date = item.date || '';
     extracted.push({ ...policy, sourceId: item.sourceId });
   }
   logLine(`结构化抽取完成：${extracted.length} 条，其中政策文件 ${extracted.filter((item) => item.docType === '政策文件').length} 条`);
+  const fromPdf = extracted.filter((item) => item.bodySource === 'page+pdf').length;
+  if (fromPdf > 0) logLine(`附件补全：${fromPdf} 条正文来自 PDF 附件`);
 
   const merge = upsertPolicies(extracted);
   const perSource = new Map();
@@ -154,6 +160,98 @@ async function runCollection(options = {}) {
   progress.phase = 'done';
   logLine(`入库完成：新增 ${merge.added}，更新 ${merge.updated}，语料共 ${merge.total} 项`);
   return { busy: false, run, summary: summary() };
+}
+
+/**
+ * 附件补全：对已入库但正文偏薄的条目，重新回源读一次附件。
+ * 不做全量重采——只补结构性缺口，避免为一个字段把七个源全抓一遍。
+ * 失败条目保持原样，绝不用空结果覆盖已有语料。
+ */
+async function runAttachmentBackfill(options = {}) {
+  if (collecting) return { busy: true };
+  collecting = true;
+  progress.phase = 'attachments';
+  const at = new Date().toISOString();
+
+  // 候选：明确标了"正文在附件"，或正文短到装不下一份完整文件。
+  // all=true 时全量回源重解析，用于抽取规则或正文上限调整后把整库刷一遍。
+  const candidates = getPolicies().filter((policy) => {
+    if (Array.isArray(options.ids) && options.ids.length > 0) return options.ids.includes(policy.id);
+    if (options.all === true) return true;
+    if (policy.docType !== '政策文件') return false;
+    return policy.attachmentOnly === true || (policy.bodyLength || 0) < 900;
+  });
+  logLine(`附件补全开始：候选 ${candidates.length} 条`);
+
+  const rows = await mapLimit(candidates, 4, async (policy) => {
+    const before = {
+      bodyLength: policy.bodyLength || 0,
+      attachmentOnly: policy.attachmentOnly === true,
+    };
+    try {
+      const page = await fetchHtml(policy.sourceUrl, { timeout: 16000 });
+      const pageText = extractArticle(page);
+      // 正文已经够长就不用翻附件——附件只用来补短正文，无差别下载只会拖慢速度
+      const worthDigging = pageText.length < 900 || (policy.attachments ?? []).length > 0;
+      const parsed = worthDigging
+        ? await readAttachments({ html: page, baseUrl: policy.sourceUrl, title: policy.title })
+        : { attachments: policy.attachments ?? [], bodyText: '' };
+      // 网页都抓不到内容时，保留原记录，不让补全把数据改坏
+      if (pageText.length < 120 && !parsed.bodyText) {
+        return { id: policy.id, title: policy.title, status: 'skipped', before, after: before, attachments: parsed.attachments, note: '回源为空，保留原记录' };
+      }
+      const merged = parsed.bodyText ? `${pageText}\n${parsed.bodyText}`.slice(0, 16000) : pageText;
+      const next = extractPolicy({
+        title: policy.title,
+        text: merged,
+        issuer: policy.issuer,
+        date: policy.date,
+        url: policy.sourceUrl,
+        sourceName: policy.sourceName,
+        sourceLevel: policy.sourceLevel,
+        attachments: parsed.attachments,
+        attachmentText: parsed.bodyText,
+      });
+      upsertPolicies([{ ...next, sourceId: policy.sourceId, id: policy.id }]);
+      const main = parsed.attachments.find((item) => item.role === 'main');
+      const status = !worthDigging ? 'checked' : parsed.bodyText ? 'filled' : main ? 'blocked' : 'checked';
+      return {
+        id: policy.id,
+        title: policy.title,
+        status,
+        before,
+        after: { bodyLength: next.bodyLength, attachmentOnly: next.attachmentOnly === true },
+        gained: Math.max(0, next.bodyLength - before.bodyLength),
+        attachments: parsed.attachments,
+        note: !worthDigging
+          ? '正文已足够长，未重读附件'
+          : parsed.bodyText
+            ? '正文附件已解析并入'
+            : main
+              ? `正文附件未解析：${main.error || '未知原因'}`
+              : parsed.attachments.length > 0
+                ? `仅 ${parsed.attachments.length} 个清单类附件，正文本身完整`
+                : '页面未挂附件',
+      };
+    } catch (error) {
+      return { id: policy.id, title: policy.title, status: 'failed', before, after: before, attachments: [], note: error.message };
+    }
+  });
+
+  const filled = rows.filter((row) => row.status === 'filled');
+  save();
+  progress.phase = 'done';
+  logLine(`附件补全完成：${filled.length} 条从 PDF 补齐，${rows.filter((row) => row.status === 'checked').length} 条无正文附件`);
+  collecting = false;
+  return {
+    busy: false,
+    at,
+    checked: rows.length,
+    filled: filled.length,
+    gained: filled.reduce((sum, row) => sum + (row.gained || 0), 0),
+    rows,
+    summary: summary(),
+  };
 }
 
 const server = http.createServer(async (req, res) => {
@@ -217,6 +315,19 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { run: result.run, summary: result.summary });
     } catch (error) {
       collecting = false;
+      return json(res, 500, { error: error.message });
+    }
+  }
+
+  if (url.pathname === '/api/attachments/backfill' && req.method === 'POST') {
+    try {
+      const body = await readBody(req);
+      const result = await runAttachmentBackfill(body);
+      if (result.busy) return json(res, 429, { error: '任务正在进行中，请稍后重试' });
+      return json(res, 200, result);
+    } catch (error) {
+      collecting = false;
+      progress.phase = 'done';
       return json(res, 500, { error: error.message });
     }
   }
