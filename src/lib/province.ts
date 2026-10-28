@@ -134,6 +134,19 @@ export function detectPolarity(policy: Policy): number {
   return 0;
 }
 
+/**
+ * 方向判定的证据：把命中的扩张词、收紧词原样返回。
+ * 论文里要有编码信度检验，就必须能逐条看到"凭什么判成这个方向"。
+ */
+export function polarityEvidence(policy: Policy): { polarity: number; up: string[]; down: string[] } {
+  const text = `${policy.title}${policy.summary}${policy.excerpt ?? ''}${policy.tags.join('')}`;
+  return {
+    polarity: detectPolarity(policy),
+    up: EXPANSIVE.filter((word) => text.includes(word)),
+    down: RESTRICTIVE.filter((word) => text.includes(word)),
+  };
+}
+
 const INSTRUMENT_TO_CHANNEL: Record<string, ChannelId[]> = {
   财政: ['fiscal', 'transfer'],
   货币: ['credit'],

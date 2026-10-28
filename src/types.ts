@@ -1,7 +1,7 @@
 export type InstrumentType = '财政' | '货币' | '消费' | '民生' | '法治' | '产业';
 export type SourceLevel = '政策原文' | '官方发布' | '权威媒体';
 export type ReaderMode = 'research' | 'decision' | 'public';
-export type ViewName = 'briefing' | 'workspace' | 'library' | 'impact' | 'compare' | 'audit' | 'method';
+export type ViewName = 'briefing' | 'workspace' | 'library' | 'impact' | 'compare' | 'synergy' | 'audit' | 'method';
 
 export interface PolicyClause {
   label: string;

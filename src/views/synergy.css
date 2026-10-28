@@ -1,0 +1,950 @@
+/* 协同测度页：左侧分布图、右侧逐项对账，强调"每个分数都能拆开看" */
+
+.syn-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px 84px;
+}
+
+.syn-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.syn-kicker {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--green);
+  opacity: 0.78;
+}
+
+.syn-head h1 {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: clamp(21px, 3.2vw, 29px);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.syn-head p {
+  margin: 0;
+  max-width: 58ch;
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--muted);
+}
+
+.syn-hero {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.syn-hero-card {
+  min-width: 118px;
+  padding: 12px 14px 13px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.018);
+  display: grid;
+  gap: 1px;
+}
+
+.syn-hero-card span {
+  font-size: 10.5px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.syn-hero-card b {
+  font-family: var(--sans);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.syn-hero-card small {
+  font-size: 10px;
+  color: var(--muted-2);
+}
+
+.syn-readout {
+  display: grid;
+  gap: 6px;
+  padding: 13px 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-left: 2px solid rgba(46, 230, 178, 0.5);
+  border-radius: 3px;
+  background: rgba(46, 230, 178, 0.035);
+}
+
+.syn-readout p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+}
+
+.syn-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.32fr) minmax(0, 1fr);
+  gap: 14px;
+  /* 各卡按内容自然高度排列：撑高图卡只会在卡片内部留一块空白，比参差更难解释 */
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+.syn-chart-card,
+.syn-detail,
+.syn-table-card,
+.syn-method {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.012);
+  overflow: hidden;
+}
+
+.syn-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.syn-card-head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.syn-card-head span {
+  font-size: 10.5px;
+  color: var(--muted-2);
+}
+
+/* ------------------------------------------------------------ 分布图 --- */
+
+.syn-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 8px 6px 2px;
+}
+
+.syn-zone {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  /* 象限名是读图的路标，不能用最暗一档：深底上 10px 的 muted-2 实际读不出来 */
+  fill: var(--muted);
+}
+
+.syn-zone.is-good {
+  fill: rgba(46, 230, 178, 0.8);
+}
+
+.syn-axis {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  fill: var(--muted);
+}
+
+.syn-axis.is-name {
+  fill: var(--ink-soft);
+}
+
+.syn-dot {
+  cursor: pointer;
+}
+
+.syn-dot circle:first-of-type {
+  fill: var(--muted-2);
+  stroke: rgba(7, 12, 14, 0.85);
+  stroke-width: 1.5;
+  transition: fill 0.15s ease;
+}
+
+.syn-dot.is-good circle:first-of-type {
+  fill: var(--green);
+}
+
+.syn-dot.is-warn circle:first-of-type {
+  fill: var(--amber);
+}
+
+.syn-dot.is-bad circle:first-of-type {
+  fill: var(--rust);
+}
+
+.syn-dot .syn-dot-hit {
+  fill: transparent;
+}
+
+.syn-dot-label {
+  font-family: var(--sans);
+  font-size: 10.5px;
+  fill: var(--ink-soft);
+  pointer-events: none;
+}
+
+.syn-dot-idx {
+  font-family: var(--mono);
+  fill: var(--muted-2);
+}
+
+.syn-dot:hover .syn-dot-label,
+.syn-dot.is-active .syn-dot-label {
+  fill: var(--ink);
+}
+
+.syn-dot.is-active circle:first-of-type {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+/* ------------------------------------------------------------ 右侧明细 --- */
+
+.syn-detail {
+  padding-bottom: 14px;
+}
+
+.syn-detail-desc {
+  margin: 10px 14px 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.syn-detail-nums {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 12px 14px 4px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.syn-detail-nums > div {
+  padding: 8px 10px 9px;
+  border-right: 1px solid var(--line);
+  display: grid;
+  gap: 1px;
+}
+
+.syn-detail-nums > div:last-child {
+  border-right: none;
+}
+
+.syn-detail-nums b {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.syn-detail-nums span {
+  font-size: 10px;
+  color: var(--muted-2);
+}
+
+.syn-detail h3 {
+  margin: 14px 14px 6px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.syn-parts {
+  list-style: none;
+  margin: 0 14px;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.syn-parts li {
+  display: grid;
+  grid-template-columns: 62px 38px minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(120, 214, 190, 0.07);
+}
+
+.syn-part-label {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+
+.syn-part-score {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--green);
+  text-align: right;
+}
+
+.syn-part-score.is-na {
+  font-size: 10px;
+  color: var(--muted-2);
+}
+
+.syn-part-detail {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.syn-conflicts {
+  list-style: none;
+  margin: 0 14px;
+  padding: 0;
+}
+
+.syn-conflicts li {
+  padding: 7px 9px;
+  margin-bottom: 5px;
+  border-left: 2px solid rgba(255, 143, 107, 0.5);
+  background: rgba(255, 143, 107, 0.05);
+  border-radius: 2px;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+.syn-conflicts b {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.syn-conflicts span {
+  display: block;
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.syn-members {
+  list-style: none;
+  margin: 0 14px;
+  padding: 0;
+}
+
+.syn-members li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(120, 214, 190, 0.07);
+}
+
+.syn-members li > span {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--muted-2);
+}
+
+.syn-members button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.syn-members button:hover {
+  color: var(--green);
+}
+
+.syn-pol {
+  flex-shrink: 0;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font-style: normal;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.syn-pol.is-up {
+  border-color: rgba(46, 230, 178, 0.35);
+  color: var(--green);
+}
+
+.syn-pol.is-down {
+  border-color: rgba(255, 143, 107, 0.35);
+  color: var(--rust);
+}
+
+.syn-note {
+  margin: 12px 14px 0;
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: var(--muted-2);
+}
+
+/* ------------------------------------------------------------ 对账表 --- */
+
+.syn-table-card {
+  margin-bottom: 14px;
+}
+
+.syn-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.syn-table th {
+  padding: 7px 10px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.syn-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(120, 214, 190, 0.07);
+  color: var(--ink-soft);
+  vertical-align: middle;
+}
+
+.syn-table tbody tr {
+  cursor: pointer;
+}
+
+.syn-table tbody tr:hover td {
+  background: rgba(46, 230, 178, 0.04);
+}
+
+.syn-table tbody tr.is-active td {
+  background: rgba(46, 230, 178, 0.07);
+}
+
+.syn-table td b {
+  display: block;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.syn-table td small {
+  display: block;
+  font-size: 9.5px;
+  color: var(--muted-2);
+  margin-top: 1px;
+}
+
+.syn-table .is-num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ink);
+}
+
+.syn-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font-size: 10px;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.syn-tag.is-good {
+  border-color: rgba(46, 230, 178, 0.4);
+  color: var(--green);
+}
+
+.syn-tag.is-warn {
+  border-color: rgba(255, 194, 71, 0.4);
+  color: var(--amber);
+}
+
+.syn-tag.is-bad {
+  border-color: rgba(255, 143, 107, 0.4);
+  color: var(--rust);
+}
+
+/* ------------------------------------------------------------ 方法与边界 --- */
+
+.syn-method-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+}
+
+.syn-method-cols > div {
+  padding: 12px 16px 16px;
+  background: rgba(7, 12, 14, 0.5);
+}
+
+.syn-method h3 {
+  margin: 0 0 8px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.syn-method ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.syn-method li {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.syn-method li b {
+  display: block;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.syn-method li span {
+  display: block;
+}
+
+/* ------------------------------------------------------------ 响应式 --- */
+
+@media (max-width: 980px) {
+  .syn-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .syn-method-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .syn-page {
+    padding: 28px 16px 64px;
+  }
+
+  .syn-hero {
+    width: 100%;
+  }
+
+  .syn-hero-card {
+    flex: 1;
+  }
+
+  .syn-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .syn-parts li {
+    grid-template-columns: 58px 34px minmax(0, 1fr);
+  }
+}
+
+/* 导出按钮：与两个大数字并排，但不抢视线 */
+.syn-export {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.syn-export:hover {
+  color: var(--green);
+  border-color: rgba(46, 230, 178, 0.45);
+}
+
+/* ------------------------------------------------------------ 编码抽检 --- */
+
+.syn-sample {
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.012);
+  overflow: hidden;
+}
+
+.syn-sample-note {
+  margin: 11px 14px 10px;
+  max-width: 88ch;
+  font-size: 11.5px;
+  line-height: 1.75;
+  color: var(--muted);
+}
+
+.syn-sample-scroll {
+  max-height: 300px;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.syn-sample-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.syn-sample-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 7px 10px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  background: var(--paper-2, #0b1215);
+  border-bottom: 1px solid var(--line);
+}
+
+.syn-sample-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(120, 214, 190, 0.07);
+  color: var(--ink-soft);
+  vertical-align: middle;
+}
+
+.syn-sample-table td.is-up {
+  color: var(--green);
+  white-space: nowrap;
+}
+
+.syn-sample-table td.is-down {
+  color: var(--rust);
+  white-space: nowrap;
+}
+
+.syn-sample-table button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.syn-sample-table button:hover {
+  color: var(--green);
+}
+
+.syn-sample-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.syn-sample-words i {
+  font-style: normal;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.syn-sample-words i.is-up {
+  border-color: rgba(46, 230, 178, 0.3);
+  color: var(--green);
+}
+
+.syn-sample-words i.is-down {
+  border-color: rgba(255, 143, 107, 0.3);
+  color: var(--rust);
+}
+
+.syn-sample-words span {
+  font-size: 10px;
+  color: var(--muted-2);
+}
+
+.syn-sample-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+}
+
+.syn-sample-foot p {
+  margin: 0;
+  font-size: 10.5px;
+  color: var(--muted-2);
+}
+
+.syn-sample-foot button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ink-soft);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.syn-sample-foot button:hover {
+  color: var(--green);
+  border-color: rgba(46, 230, 178, 0.45);
+}
+
+/* 标签让位时的引导线：让读者知道这个名字还属于刚才那个点 */
+.syn-dot-leader {
+  stroke: var(--line-strong);
+  stroke-width: 0.5;
+}
+
+/* 图例：编号 + 渠道 + 条数 + 两个分数，一行读完一个渠道 */
+.syn-legend {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 2px 10px;
+  margin: 2px 10px 0;
+  padding: 8px 0 2px;
+  border-top: 1px solid var(--line);
+}
+
+.syn-legend button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 5px;
+  border: none;
+  border-radius: 3px;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.syn-legend button:hover,
+.syn-legend button.is-active {
+  background: rgba(46, 230, 178, 0.07);
+}
+
+.syn-legend-idx {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: #04140f;
+  background: var(--muted-2);
+}
+
+.syn-legend-idx.is-good {
+  background: var(--green);
+}
+
+.syn-legend-idx.is-warn {
+  background: var(--amber);
+}
+
+.syn-legend-idx.is-bad {
+  background: var(--rust);
+}
+
+.syn-legend em {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 9.5px;
+  color: var(--muted-2);
+}
+
+.syn-legend b {
+  flex-shrink: 0;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.syn-legend-foot {
+  margin: 4px 12px 8px;
+  font-size: 9.5px;
+  color: var(--muted-2);
+}
+
+.syn-dot-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  fill: #04140f;
+  pointer-events: none;
+}
+
+/* 读图指引：补上左下角的空白，也省得读者自己猜四个象限的含义 */
+.syn-read-guide {
+  margin: 0 14px 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.syn-read-guide h3 {
+  margin: 0 0 7px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.syn-read-guide ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.syn-read-guide li {
+  position: relative;
+  padding-left: 12px;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.syn-read-guide li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+
+.syn-read-guide li b {
+  margin-right: 4px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.syn-read-guide p {
+  margin: 9px 0 0;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: var(--muted-2);
+}
+
+/* 方向并存：只并列两组文件，不做"甲和乙打架"的断言 */
+.syn-conflicts li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.syn-conflicts li > i {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.syn-conflicts li > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  min-width: 0;
+}
+
+.syn-conflicts li > div button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink);
+  font-size: 11.5px;
+  line-height: 1.65;
+  text-align: left;
+  cursor: pointer;
+}
+
+.syn-conflicts li > div button:hover {
+  color: var(--green);
+}
+
+.syn-conflicts li.is-hint {
+  border-left-color: transparent;
+  background: none;
+  padding: 2px 9px 0;
+}
+
+.syn-conflicts li.is-hint span {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: var(--muted-2);
+}

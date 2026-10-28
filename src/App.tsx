@@ -8,6 +8,7 @@ import {
   Map,
   ClipboardCheck,
   Menu,
+  Network,
   Radar,
   ShieldCheck,
   X,
@@ -26,12 +27,14 @@ import { ImpactView } from './views/ImpactView';
 import { CompareView } from './views/CompareView';
 import { MethodView } from './views/MethodView';
 import { AuditView } from './views/AuditView';
+import { SynergyView } from './views/SynergyView';
 
 const NAV_ITEMS: { id: ViewName; label: string; icon: typeof FileSearch }[] = [
   { id: 'briefing', label: '一键研判', icon: Radar },
   { id: 'library', label: '政策库', icon: Library },
   { id: 'impact', label: '省级影响', icon: Map },
   { id: 'compare', label: '政策对比', icon: GitCompareArrows },
+  { id: 'synergy', label: '协同测度', icon: Network },
   { id: 'audit', label: '质量体检', icon: ClipboardCheck },
   { id: 'workspace', label: '自由追问', icon: FileSearch },
   { id: 'method', label: '方法与边界', icon: ShieldCheck },
@@ -253,6 +256,7 @@ function App() {
         requestedView === 'library' ||
         requestedView === 'impact' ||
         requestedView === 'compare' ||
+        requestedView === 'synergy' ||
         requestedView === 'audit' ||
         requestedView === 'method'
       ) {
@@ -470,6 +474,9 @@ function App() {
           onGoLibrary={() => navigate('library')}
           onExport={exportCurrent}
         />
+      )}
+      {view === 'synergy' && (
+        <SynergyView policies={corpusPolicies} onOpenPolicy={setSelectedPolicyId} />
       )}
       {view === 'audit' && <AuditView onOpenPolicy={setSelectedPolicyId} />}
       {view === 'method' && <MethodView sources={corpus.sources} />}

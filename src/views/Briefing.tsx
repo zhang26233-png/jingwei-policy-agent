@@ -19,6 +19,7 @@ import type { ScanOutcome, SourceStatus } from '../lib/api';
 import { buildMechanism, buildMechanismBoard, combineDirection, type MechanismChain } from '../lib/mechanism';
 import { rankPolicies, type PriorityBoard } from '../lib/priority';
 import { buildRelations, RELATION_META, type RelationResult } from '../lib/relations';
+import { buildSynergy } from '../lib/synergy';
 import { evaluateImpact } from '../lib/province';
 import { buildDigest, type PolicyDigest } from '../lib/digest';
 import { buildBriefingReport, downloadText } from '../lib/report';
@@ -352,6 +353,7 @@ export function Briefing({
       impact,
       mechanisms,
       digests,
+      synergy: buildSynergy(policies),
       generatedAt: finishedAt ?? new Date().toISOString(),
     });
     downloadText(`宏策智研_一键研判简报_${(finishedAt ?? '').slice(0, 10)}.md`, content);
