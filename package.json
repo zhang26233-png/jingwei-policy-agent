@@ -9,7 +9,8 @@
     "build": "tsc -b && vite build",
     "start": "npm run build && node server/index.mjs",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify": "node scripts/verify-transfer.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.61.0",

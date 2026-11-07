@@ -28,3 +28,6 @@ data/policies.json
 
 # 本地截图与验证产物
 .shots
+
+# 复验脚本的临时产物
+.tmp
