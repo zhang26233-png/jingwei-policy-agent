@@ -128,7 +128,7 @@
 
 .trf-prov-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 8px;
   margin-bottom: 20px;
 }
@@ -609,4 +609,86 @@
 
 .trf-table tr.likely td {
   color: var(--muted);
+}
+
+/* 能答 / 不能答：研究设计的边界声明，视觉上要和图表区分开，不能抢图表的注意力 */
+.trf-design-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.trf-design-col {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 13px 15px 15px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.trf-design-col.yes {
+  border-left: 3px solid var(--green);
+}
+
+.trf-design-col.no {
+  border-left: 3px solid var(--rust);
+}
+
+.trf-design-col h3 {
+  margin: 0 0 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.trf-design-col.yes h3 {
+  color: var(--green);
+}
+
+.trf-design-col.no h3 {
+  color: var(--rust);
+}
+
+.trf-design-col ul {
+  margin: 0;
+  padding-left: 15px;
+  display: grid;
+  gap: 7px;
+  font-size: 12.5px;
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+.trf-design-col li::marker {
+  color: var(--muted-2);
+}
+
+.trf-prov-window {
+  margin-top: 3px;
+  font-size: 10.5px;
+  color: var(--muted-2);
+  letter-spacing: 0.01em;
+}
+
+/* 超出观测窗：这是一格"不能判断"，必须比"未见"更淡，避免被读成否定结论 */
+.trf-mx-cell.outside {
+  background: rgba(255, 255, 255, 0.015);
+  cursor: help;
+}
+
+.trf-outside {
+  font-size: 10.5px;
+  color: var(--muted-2);
+  letter-spacing: 0.02em;
+}
+
+.trf-legend i.chip.outside {
+  background: transparent;
+  border: 1px dashed var(--muted-2);
+}
+
+@media (max-width: 900px) {
+  .trf-design-grid {
+    grid-template-columns: 1fr;
+  }
 }

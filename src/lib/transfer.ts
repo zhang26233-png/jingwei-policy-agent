@@ -22,6 +22,8 @@ export interface LocalProvince {
   kind: string;
   list: string;
   count: number;
+  // 近 90 天的政策工具类条目数。总条数会被历史存量骗：有的栏目三年攒几十条、近三个月一条没发。
+  recentDocs?: number;
   earliest: string | null;
   latest: string | null;
   errors: string[];
@@ -47,7 +49,10 @@ export interface ThemeDef {
   why: string;
 }
 
-// 八个主题都对应本项目语料里真实存在的中央文件，日期以原文标注为准。
+// 主题锚点全部对应本项目语料里真实存在的中央文件，日期以原文标注为准。
+// 选主题的标准是"地方有对应事权、且会以本级文件接续"，不是"中央文件里最有名的那几份"——
+// 早先只挑了 8 个专项工具（贴息、清欠、农业保险…），实测在 617 份地方文件里几乎全部零命中，
+// 因为地方落实这类专项多走部门文件，省级门户的"政策文件"栏目收不全。改成按领域设锚点后才有观察量。
 export const THEMES: ThemeDef[] = [
   {
     id: 'sports',
@@ -59,21 +64,30 @@ export const THEMES: ThemeDef[] = [
     why: '国办发文要求各地丰富赛事供给、以赛事带动消费，属于典型的需要地方接续办赛和配套的场景。',
   },
   {
+    id: 'consumption-infra',
+    theme: '消费基础设施建设',
+    short: '消费基建',
+    centralTitle: /加强消费基础设施建设/,
+    centralDate: '2026-10-30',
+    keys: /消费基础设施|消费场景|消费新业态|商圈|促消费/,
+    why: '文件明确要求地方配套项目清单，属于有硬性接续要求的政策。',
+  },
+  {
     id: 'elderly',
     theme: '普惠养老服务价格机制',
     short: '普惠养老',
     centralTitle: /普惠养老服务提质扩面/,
     centralDate: '2026-10-16',
-    keys: /养老服务|普惠养老|养老机构/,
+    keys: /养老服务|养老机构|老龄事业|银发经济/,
     why: '价格机制需要省市定价目录与补贴政策衔接，地方不接就落不了地。',
   },
   {
-    id: 'housing',
+    id: 'housing-loan',
     theme: '居民购房贷款贴息',
     short: '购房贴息',
     centralTitle: /居民购房贷款贴息/,
     centralDate: '2026-09-29',
-    keys: /购房.{0,10}贴息|住房贷款贴息|购房贷款/,
+    keys: /购房.{0,8}贴息|住房贷款贴息|购房补贴|住房消费/,
     why: '贴息资金由中央与地方分担，地方需要出台实施细则才能执行。',
   },
   {
@@ -82,16 +96,16 @@ export const THEMES: ThemeDef[] = [
     short: '清欠回款',
     centralTitle: /中小企业回款难/,
     centralDate: '2026-09-10',
-    keys: /清欠|拖欠.{0,12}(账款|款项)|回款难|中小企业款项/,
+    keys: /清欠|拖欠.{0,10}(账款|款项)|中小企业款项|回款难|账款清欠/,
     why: '清欠需要地方建立台账与督办机制，是观察地方执行力度的高频切口。',
   },
   {
     id: 'ai-jobs',
     theme: '人工智能与就业友好',
     short: 'AI+就业',
-    centralTitle: /构建就业友好型发展方式/,
+    centralTitle: /就业友好型发展方式/,
     centralDate: '2026-10-23',
-    keys: /人工智能.{0,18}就业|就业友好|AI.{0,6}就业/,
+    keys: /人工智能.{0,18}就业|就业友好|AI.{0,8}就业/,
     why: '新议题，地方是否跟进、跟得多快，直接反映对新兴政策的响应速度。',
   },
   {
@@ -104,15 +118,6 @@ export const THEMES: ThemeDef[] = [
     why: '农业保险以省为单位组织，是最容易观察到"一省一策"的领域。',
   },
   {
-    id: 'consumption-infra',
-    theme: '消费基础设施建设',
-    short: '消费基建',
-    centralTitle: /加强消费基础设施建设/,
-    centralDate: '2026-10-30',
-    keys: /消费基础设施|消费投资/,
-    why: '文件明确要求地方配套项目清单，属于有硬性接续要求的政策。',
-  },
-  {
     id: 'rv',
     theme: '房车与自驾消费',
     short: '房车消费',
@@ -121,12 +126,111 @@ export const THEMES: ThemeDef[] = [
     keys: /房车|自驾车|露营/,
     why: '涉及营地用地、车辆管理等地方事权，中央文件只是开口子，落地看地方。',
   },
+  {
+    id: 'new-quality',
+    theme: '新质生产力与未来产业',
+    short: '新质生产力',
+    centralTitle: /发展新质生产力/,
+    centralDate: '2026-10-09',
+    keys: /新质生产力|未来产业|战略性新兴/,
+    why: '中央提出方向后，地方一般以专项行动方案接续，是观察"抢新赛道"最快的窗口。',
+  },
+  {
+    id: 'tech-merge',
+    theme: '科技创新与产业创新融合',
+    short: '科技融合',
+    centralTitle: /科技创新和产业创新深度融合/,
+    centralDate: '2026-10-21',
+    keys: /科技创新|科技成果|中试|产业创新/,
+    why: '涉及地方实验室、中试平台与成果转化，省级普遍有配套文件。',
+  },
+  {
+    id: 'property',
+    theme: '房地产与住房信贷',
+    short: '房地产',
+    centralTitle: /房地产信贷管理/,
+    centralDate: '2026-08-28',
+    keys: /房地产|住房信贷|住房市场|保障房|城中村/,
+    why: '属地责任最重的领域之一，地方几乎必然会发文件。',
+  },
+  {
+    id: 'provident',
+    theme: '住房公积金制度',
+    short: '公积金',
+    centralTitle: /住房公积金管理条例/,
+    centralDate: '2026-08-18',
+    keys: /住房公积金|公积金/,
+    why: '公积金政策由地方管委会执行，条例一改，地方必须跟进调整。',
+  },
+  {
+    id: 'logistics',
+    theme: '现代物流网建设',
+    short: '物流',
+    centralTitle: /物流网建设/,
+    centralDate: '2026-08-28',
+    keys: /物流|冷链|仓储|货运/,
+    why: '物流枢纽、冷链设施需要地方立项与用地配套。',
+  },
+  {
+    id: 'heritage',
+    theme: '文化遗产保护传承',
+    short: '文化遗产',
+    centralTitle: /文化遗产保护传承/,
+    centralDate: '2026-09-29',
+    keys: /文化遗产|文物保护|非遗|历史文化/,
+    why: '地方是文物保护与非遗传承的责任主体，规划落地必须省级配套。',
+  },
+  {
+    id: 'education',
+    theme: '义务教育与学生资助',
+    short: '义务教育',
+    centralTitle: /城乡义务教育补助经费/,
+    centralDate: '2026-10-14',
+    keys: /义务教育|学生资助|教育经费|普通高中|办学条件/,
+    why: '补助经费下达后，省级要分解到市县，容易观察到文件动作。',
+  },
+  {
+    id: 'export-tax',
+    theme: '出口退税政策调整',
+    short: '出口退税',
+    centralTitle: /出口退税政策/,
+    centralDate: '2026-10-12',
+    keys: /出口退税|退税率/,
+    why: '退税调整直接影响地方外贸企业，多数省份会发操作指引或宣讲通知。',
+  },
+  {
+    id: 'e-gov',
+    theme: '高效办成一件事',
+    short: '政务服务',
+    centralTitle: /高效办成一件事/,
+    centralDate: '2026-09-23',
+    keys: /高效办成一件事|政务服务|一件事/,
+    why: '清单任务逐项落到省市两级政务服务平台，是最容易核对进度的领域。',
+  },
+  {
+    id: 'power',
+    theme: '新型电力系统建设',
+    short: '电力',
+    centralTitle: /新型电力系统建设/,
+    centralDate: '2026-08-03',
+    keys: /新型电力系统|电网|电力市场|电力.{0,6}(规划|建设)/,
+    why: '电力规划由省级能源主管部门落地，配套文件密度高。',
+  },
 ];
 
 // 地方文件得是"政策工具"而不是通知类事务性文件；标题里没有这些词的多为会议、批复、公告。
-const DOC_LIKE = /(通知|意见|方案|办法|措施|规划|细则|实施|规定|指引|清单|计划)/;
+const DOC_LIKE = /(通知|意见|方案|办法|措施|规划|细则|实施|规定|指引|清单|计划|决定)/;
 
-export type CellStatus = 'respond' | 'pre' | 'likely' | 'none' | 'uncovered';
+// 事务性文件也常以"通知"结尾，但不是政策工具：培训班、课题征集、名录公布、人员解聘、采购公告……
+// 不排掉它们，时滞会被这些文件压短，甚至出现"中央发文当天地方就响应"的假象。
+// 这一条是拿真实命中逐条核对出来的：北京 +0 天那次命中的是"人工智能领域颠覆性技术方向储备课题征集"，
+// 文化遗产 +14 天命中的是"文物保护工程资质单位培训班"，都不是政策接续。
+const EXCLUDE_DOC =
+  /(培训|征集|课题|名录|名单|解聘|聘任|招聘|笔试|面试|遴选|公示|资质|年检|考核|评比|竞赛|表彰|获奖|采购|招标|中标|预算公开|决算|职称|考试|批复|复函)/;
+
+const isPolicyDoc = (title: string) => DOC_LIKE.test(title) && !EXCLUDE_DOC.test(title);
+
+export type CellStatus = 'respond' | 'pre' | 'likely' | 'none' | 'outside' | 'uncovered';
 
 export interface Cell {
   status: CellStatus;
@@ -137,6 +241,8 @@ export interface Cell {
   later?: number;
   // 疑似承接：标题没命中，但正文里同一主题出现多次且晚于中央发文
   mentions?: number;
+  // 超出观测窗时，写明是该省栏目还没更新到那一天，还是栏目最早只回溯到那一天
+  windowGap?: { kind: 'before' | 'after'; province: string };
 }
 
 export interface ThemeRow {
@@ -164,6 +270,9 @@ export interface TransferResult {
     themes: number;
     respondedThemes: number;
     totalPairs: number;
+    // 落在该省栏目观测窗之外、无法判断的组合数
+    outsidePairs: number;
+    observablePairs: number;
     respondPairs: number;
     prePairs: number;
     fastest: { province: string; theme: string; lag: number } | null;
@@ -183,8 +292,24 @@ const median = (values: number[]) => {
   return sorted.length % 2 === 0 ? Math.round((sorted[mid - 1] + sorted[mid]) / 2) : sorted[mid];
 };
 
-// 可用性闸门：条目太少或时间跨度太短，空格子会被误读成"地方没做"，宁可标成不可用。
-const GATE = { minItems: 30, minSpanDays: 60 };
+// 可用性闸门：不数历史存量，只看"近三个月还在不在更新"。
+// 一个栏目三年攒了 40 条、近 90 天只发 2 条，用它判断"地方是否跟进"必然大量假阴性——
+// 那不是"没跟进"，是"栏目不更新了"。
+const GATE = { minRecentDocs: 6, minLatest: '2026-10-20' };
+
+// 地理归属只用于提示样本偏向，不参与计算。
+const REGION: Record<string, string> = {
+  beijing: '京津冀',
+  hebei: '京津冀',
+  shanghai: '长三角',
+  jiangsu: '长三角',
+  guangdong: '珠三角',
+  guangzhou: '珠三角',
+  shanxi: '中部',
+  shaanxi: '西部',
+};
+
+export const regionOf = (id: string) => REGION[id] ?? '其他';
 
 export function buildTransfer(payload: LocalPayload | null, policies: { id: string; title: string; date: string }[]): TransferResult | null {
   if (!payload?.ready || payload.provinces.length === 0) return null;
@@ -194,16 +319,18 @@ export function buildTransfer(payload: LocalPayload | null, policies: { id: stri
   const provinces = payload.provinces.map((province) => {
     const spanDays =
       province.earliest && province.latest ? dayDiff(province.latest, province.earliest) : 0;
-    const tooFew = province.count < GATE.minItems;
-    const tooShort = spanDays < GATE.minSpanDays;
+    const recentDocs = province.recentDocs ?? province.count;
+    const thin = recentDocs < GATE.minRecentDocs;
+    const stale = !province.latest || province.latest < GATE.minLatest;
     return {
       ...province,
       spanDays,
-      usable: !tooFew && !tooShort,
-      reason: tooFew
-        ? `仅抓到 ${province.count} 条，低于 ${GATE.minItems} 条可用门槛`
-        : tooShort
-          ? `时间跨度只有 ${spanDays} 天，覆盖不到本期中央文件`
+      recentDocs,
+      usable: !thin && !stale,
+      reason: thin
+        ? `近 90 天仅 ${recentDocs} 份文件，栏目更新过疏`
+        : stale
+          ? `栏目只更新到 ${province.latest ?? '未知'}，10 月下旬之后的政策无法观察`
           : null,
     };
   });
@@ -222,19 +349,35 @@ export function buildTransfer(payload: LocalPayload | null, policies: { id: stri
         cells[province.id] = { status: 'uncovered' };
         continue;
       }
+      // 每省的观测窗不一样宽：上海的栏目只回溯到 7 月，广州的能回溯到去年。
+      // 中央发文日落在窗口外时，这一格不能判"未见"——判了就是拿栏目边界当政策事实。
+      if (province.latest && centralDate > province.latest) {
+        cells[province.id] = {
+          status: 'outside',
+          windowGap: { kind: 'after', province: province.latest },
+        };
+        continue;
+      }
+      if (province.earliest && centralDate < province.earliest) {
+        cells[province.id] = {
+          status: 'outside',
+          windowGap: { kind: 'before', province: province.earliest },
+        };
+        continue;
+      }
       const hits = province.items
-        .filter((item) => theme.keys.test(item.title) && DOC_LIKE.test(item.title))
+        .filter((item) => theme.keys.test(item.title) && isPolicyDoc(item.title))
         .sort((a, b) => a.date.localeCompare(b.date));
       if (hits.length === 0) {
         // 标题没命中，但正文里同一主题反复出现、且文件晚于中央发文 —— 判为"疑似承接"，
         // 单独标出来供人工核，不计入时滞统计，避免把"顺带提到"算成"落实"。
         const bodyHit = province.items
-          .filter((item) => item.text && item.date >= centralDate)
+          .filter((item) => item.text && item.date >= centralDate && !EXCLUDE_DOC.test(item.title))
           .map((item) => {
             const mentions = (item.text?.match(new RegExp(theme.keys.source, 'g')) ?? []).length;
             return { item, mentions };
           })
-          .filter((row) => row.mentions >= 3)
+          .filter((row) => row.mentions >= 5)
           .sort((a, b) => a.item.date.localeCompare(b.item.date))[0];
         cells[province.id] = bodyHit
           ? {
@@ -290,6 +433,12 @@ export function buildTransfer(payload: LocalPayload | null, policies: { id: stri
     (sum, row) => sum + Object.values(row.cells).filter((cell) => cell.status === 'pre').length,
     0,
   );
+  const outsidePairs = rows.reduce(
+    (sum, row) => sum + Object.values(row.cells).filter((cell) => cell.status === 'outside').length,
+    0,
+  );
+  const totalPairs = rows.length * usable.length;
+  const observablePairs = totalPairs - outsidePairs;
   const flat = rows.flatMap((row) =>
     Object.entries(row.cells)
       .filter(([, cell]) => cell.status === 'respond')
@@ -302,7 +451,9 @@ export function buildTransfer(payload: LocalPayload | null, policies: { id: stri
   const summary = {
     themes: rows.length,
     respondedThemes: rows.filter((row) => row.responders > 0).length,
-    totalPairs: rows.length * usable.length,
+    totalPairs,
+    outsidePairs,
+    observablePairs,
     respondPairs,
     prePairs,
     fastest: sortedFlat[0] ?? null,
@@ -310,11 +461,51 @@ export function buildTransfer(payload: LocalPayload | null, policies: { id: stri
     medianLag: median(sortedFlat.map((item) => item.lag)),
   };
 
+  const regions = [...new Set(usable.map((province) => regionOf(province.id)))];
+
+  // 按地方单元统计"跟进"与"先行"，用来识别两个容易被误读的模式：
+  //  ① 某个地方占了大多数跟进，但它的栏目收录范围本来就更宽（含委办局与区级文件）；
+  //  ② 某个地方看起来"跟进少"，其实是"早就做了"——那些格子落在 pre 里。
+  const byProvince = usable
+    .map((province) => ({
+      short: province.short,
+      items: province.count,
+      recentDocs: province.recentDocs ?? province.count,
+      respond: rows.filter((row) => row.cells[province.id]?.status === 'respond').length,
+      pre: rows.filter((row) => row.cells[province.id]?.status === 'pre').length,
+    }))
+    .sort((a, b) => b.respond - a.respond || b.recentDocs - a.recentDocs);
+
   const findings: string[] = [];
   findings.push(
-    `在可用的 ${usable.length} 个省级单位、${rows.length} 项重点中央政策之间，共观察到 ${respondPairs} 组"中央发文—地方跟进"，` +
-      `覆盖 ${summary.respondedThemes} 项政策；中位时滞 ${summary.medianLag ?? '—'} 天。`,
+    `在 ${usable.length} 个地方单元、${rows.length} 项重点中央政策之间，可观察的组合是 ${observablePairs} 个` +
+      `（另有 ${outsidePairs} 个落在各栏目的观测窗之外，不做判断）；其中观察到 ${respondPairs} 组"中央发文—地方跟进"，` +
+      `覆盖 ${summary.respondedThemes} 项政策，中位时滞 ${summary.medianLag ?? '—'} 天。`,
   );
+  findings.push(
+    `样本的地理分布是：${regions.join('、')}，共 ${usable.length} 个单元——` +
+      `这是一个"东部与华北为主、西部有点、中部缺位"的便利样本。所以本页只能回答"这几地之间差多少"，` +
+      `不能回答"全国层面有没有差异"；后者需要每省一个抓取适配器或直接购买政策数据库，靠现有公开栏目做不到。`,
+  );
+
+  const top = byProvince[0];
+  if (top && respondPairs > 0 && top.respond / respondPairs >= 0.4) {
+    findings.push(
+      `${top.short}一家占了 ${top.respond}/${respondPairs} 组跟进，很像是"它动得最快"。但它的栏目同时收市属委办局和区级文件` +
+        `（近 90 天 ${top.recentDocs} 份，其他地方多在个位数到几十份），"看得见"的程度本来就更高。` +
+        `所以跨地区比时滞，比的其实是各栏目的文件公开密度，不是行政效率——这一层必须在结论里说清楚，否则会把收录差异读成执行力差异。`,
+    );
+  }
+
+  const preHeavy = byProvince.filter((item) => item.pre >= 2 && item.pre > item.respond);
+  if (preHeavy.length > 0) {
+    findings.push(
+      `${preHeavy.map((item) => `${item.short}先行 ${item.pre} 组`).join('、')}——该地的动作多数早于中央发文。` +
+        `这些领域里，中央文件更像是在追认地方已有做法，把它算成"地方响应慢"方向就反了；` +
+        `反过来也说明本期中央文件并非全部是"新设政策"，有相当一部分是存量经验的上升。`,
+    );
+  }
+
   if (summary.fastest) {
     findings.push(
       `最快的一次响应是「${summary.fastest.province}」对「${summary.fastest.theme}」，` +
@@ -334,16 +525,31 @@ export function buildTransfer(payload: LocalPayload | null, policies: { id: stri
         .join('、')}），单独标注待核，不计入上面的时滞统计——正文提到不等于落实，混算会把时滞压短。`,
     );
   }
-  const silent = rows.filter((row) => row.responders === 0);
-  if (silent.length > 0) {
+  // 没有"跟进"的主题要分两种，混在一起说会自相矛盾：
+  // 一种是地方早在中央之前就发过文件（pre/likely），只是观察窗内没有新动作；
+  // 另一种是标题层面完全没匹配到，只能靠正文提及来提示。
+  const noRespond = rows.filter((row) => row.responders === 0);
+  const preOnly = noRespond.filter((row) =>
+    Object.values(row.cells).some((cell) => cell.status === 'pre' || cell.status === 'likely'),
+  );
+  const emptyRows = noRespond.filter((row) => !preOnly.includes(row));
+  if (preOnly.length > 0) {
     findings.push(
-      `还有 ${silent.length} 项政策（${silent.map((row) => row.theme.short).join('、')}）在已抓取的地方文件里连正文都没提到——` +
+      `${preOnly.map((row) => row.theme.short).join('、')}这 ${preOnly.length} 项在观察窗内没有新的地方文件，` +
+        `但地方此前已发过同领域文件——属于"早就做了、暂时不需要再发"，不能算作未跟进。`,
+    );
+  }
+  if (emptyRows.length > 0) {
+    findings.push(
+      `剩下 ${emptyRows.length} 项政策（${emptyRows.map((row) => row.theme.short).join('、')}）在已抓取的地方文件里连标题和正文都没有匹配到——` +
         `这可能是尚未发文，也可能落在部门文件或不出文的执行环节，不能直接判为"没做"。`,
     );
   }
   if (prePairs > 0) {
+    // 方法论提示只留一句，细节已在上面按主题分类说明，避免同一件事讲三遍。
     findings.push(
-      `另有 ${prePairs} 组"地方文件早于中央文件"的情况，多为地方先行试点或既有存量政策，判断方向应是"中央吸收了地方做法"，而不是"地方响应中央"。`,
+      `合计 ${prePairs} 组"地方文件早于中央文件"。这类格子要把方向反过来读：不是地方响应中央，而是中央吸收了地方做法；` +
+        `若把它并进时滞统计，中位数会被系统性压短。`,
     );
   }
 
@@ -404,7 +610,9 @@ export interface AttentionResult {
 }
 
 export function buildAttention(provinces: LocalProvince[]): AttentionResult | null {
-  const usable = provinces.filter((province) => province.items.length >= GATE.minItems);
+  const usable = provinces.filter(
+    (province) => (province.recentDocs ?? province.count) >= GATE.minRecentDocs,
+  );
   if (usable.length === 0) return null;
   const cells: Record<string, AttentionCell> = {};
   const bucketTotals = ATTENTION_BUCKETS.map((bucket) => ({ id: bucket.id, label: bucket.label, total: 0 }));

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, Info } from 'lucide-react';
 import type { Policy } from '../types';
 import { fetchLocals } from '../lib/api';
-import { buildAttention, buildTransfer, type Cell, type LocalPayload } from '../lib/transfer';
+import { buildAttention, buildTransfer, regionOf, type Cell, type LocalPayload } from '../lib/transfer';
 import './transfer.css';
 
 interface TransferViewProps {
@@ -89,6 +89,15 @@ export function TransferView({ policies }: TransferViewProps) {
   }
 
   const usable = result.provinces.filter((province) => province.usable);
+  // 广州是市级单元，混进"31 个省级单位"的分母会把覆盖率说大，必须分开计数。
+  // 注意用前缀判断：广州的 level 是"市级（副省级省会）"，includes('省级') 会把它误判成省级。
+  const provincialUsable = usable.filter((province) => province.level.startsWith('省级')).length;
+  const cityUsable = usable.length - provincialUsable;
+  const regionCount = usable.reduce<Record<string, number>>((acc, province) => {
+    const key = regionOf(province.id);
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+  }, {});
   const toneOf = (id: string) =>
     PROVINCE_TONE[Math.max(0, usable.findIndex((p) => p.id === id)) % PROVINCE_TONE.length];
 
@@ -120,6 +129,7 @@ export function TransferView({ policies }: TransferViewProps) {
     }
     if (cell.status === 'likely') return 'likely';
     if (cell.status === 'pre') return 'pre';
+    if (cell.status === 'outside') return 'outside';
     return 'none';
   };
 
@@ -128,30 +138,32 @@ export function TransferView({ policies }: TransferViewProps) {
       <header className="trf-head">
         <div className="trf-head-main">
           <span className="trf-kicker">CENTRAL → LOCAL · 央地传导</span>
-          <h1>中央发文之后，地方什么时候动</h1>
+          <h1>中央发文之后，这几地什么时候动</h1>
           <p>
-            以中央近期出台的八项重点政策为锚，到各省已公开的政策文件里找对应文本，算发文到落地的时间差。
-            看三件事：地方有没有接、隔了几天、各省之间差多少。
+            以中央近期出台的八项政策为锚，逐份核对地方已公开的政策文件，记录"有没有接、隔了几天"。
+            这是一份<strong>可复现的多案例观察</strong>：每一个判断都能点回地方原文，但样本只覆盖少数地方，不是全国抽样。
           </p>
         </div>
         <div className="trf-hero">
           <div className="trf-hero-card">
-            <span>可用省级单位</span>
+            <span>可用地方单元</span>
             <b>
               {result.coverage.usable}
-              <small> / {result.coverage.totalProvinces}</small>
+              <small> 个</small>
             </b>
-            <em>已接入 {result.coverage.attempted} 个</em>
+            <em>
+              省级 {provincialUsable} + 市级 {cityUsable}，全国共 {result.coverage.totalProvinces} 个省级单位
+            </em>
           </div>
           <div className="trf-hero-card">
-            <span>观察到跟进</span>
-            <b>{result.summary.respondPairs}</b>
-            <em>共 {result.summary.totalPairs} 个主题×省份组合</em>
+            <span>可观察组合</span>
+            <b>{result.summary.observablePairs}</b>
+            <em>共 {result.summary.totalPairs} 个主题×地方组合</em>
           </div>
           <div className="trf-hero-card">
             <span>中位时滞</span>
             <b>{result.summary.medianLag ?? '—'}</b>
-            <em>天（仅算已跟进样本）</em>
+            <em>天（仅算已跟进的 {result.summary.respondPairs} 组）</em>
           </div>
         </div>
       </header>
@@ -159,12 +171,51 @@ export function TransferView({ policies }: TransferViewProps) {
       <div className="trf-banner">
         <Info size={15} />
         <div>
-          <b>覆盖率必须先说清楚：</b>全国 31 个省级单位，本轮只跑通 {result.coverage.attempted} 个门户，其中{' '}
-          {result.coverage.usable} 个达到"条目数与时间跨度可用"的门槛（
-          {usable.map((province) => province.name).join('、') || '无'}），合计 {result.coverage.items} 条地方政策文件。
-          其余省份抓不到，不等于没发文——这张图描述的是<strong>样本内的传导差异</strong>，不能当全国结论用。
+          <b>这不是全国样本，先把边界说清楚：</b>全国共 31 个省级单位，本轮接入 {result.coverage.attempted} 个地方政府门户、
+          {result.coverage.usable} 个达到"近三个月仍在正常更新"的门槛（
+          {usable.map((province) => province.name).join('、') || '无'}
+          ——其中省级 {provincialUsable} 个、市级 {cityUsable} 个），合计 {result.coverage.items} 份地方政策文件。
+          其余门户要么拒绝访问、要么列表由脚本渲染、要么栏目已停更。所以本页能回答<strong>这几地之间差多少</strong>，
+          不能回答<strong>全国有没有差异</strong>。
         </div>
       </div>
+
+      <section className="trf-card trf-design">
+        <header className="trf-card-head">
+          <h2>这份材料能回答什么、不能回答什么</h2>
+          <p>研究设计是"多案例比较"，不是抽样调查。提前把边界写出来，答辩时不必临场找补。</p>
+        </header>
+        <div className="trf-design-grid">
+          <div className="trf-design-col yes">
+            <h3>能回答</h3>
+            <ul>
+              <li>某项中央政策出台后，这几个地方各自隔几天发了对应文件——每条都能点回原文核对。</li>
+              <li>同一项政策在不同地方的时间差有多大：最快 {result.summary.fastest?.lag ?? '—'} 天、最慢{' '}
+                {result.summary.slowest?.lag ?? '—'} 天（仅限 {result.summary.respondPairs} 组已观察到跟进的样本）。
+              </li>
+              <li>哪几项政策在这些地方的政策文件里始终找不到对应文本，可以据此提出"落实在部门文件"的追问。</li>
+            </ul>
+          </div>
+          <div className="trf-design-col no">
+            <h3>不能回答</h3>
+            <ul>
+              <li>
+                全国 31 个省级单位的时间差排序：可用的只有 {provincialUsable} 个省级单位和 {cityUsable} 个市级单位，
+                分母不齐，排序没有意义。
+              </li>
+              <li>
+                地域覆盖不全：样本分布是{' '}
+                {Object.entries(regionCount)
+                  .map(([region, count]) => `${region} ${count}`)
+                  .join('、')}
+                ，东北、中部大部与西南缺席，缺失的地方不能靠推断补上。
+              </li>
+              <li>"地方到底做没做"：未见文件只代表省级门户的政策文件栏目里没有，很多落实在部门文件或不出文的执行环节。</li>
+              <li>响应力度：这里只记首份文件的日期，不评价配套资金、实施细则的强度。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
       <div className="trf-prov-grid">
         {result.provinces.map((province) => (
@@ -174,7 +225,10 @@ export function TransferView({ policies }: TransferViewProps) {
               <span>{province.usable ? '可用' : '未纳入'}</span>
             </div>
             <div className="trf-prov-meta">
-              {province.count} 条 · {province.earliest ?? '—'} 起
+              {province.count} 份文件 · 近 90 天 {province.recentDocs ?? province.count} 份
+            </div>
+            <div className="trf-prov-window">
+              观测窗 {province.earliest ?? '—'} ~ {province.latest ?? '—'}
             </div>
             {province.reason && <div className="trf-prov-why">{province.reason}</div>}
           </div>
@@ -268,7 +322,10 @@ export function TransferView({ policies }: TransferViewProps) {
       <section className="trf-card">
         <header className="trf-card-head">
           <h2>响应矩阵：谁接了、隔几天</h2>
-          <p>格子里的天数＝地方最早对应文件距中央发文的天数；点开可回地方原文。</p>
+          <p>
+            格子里的天数＝地方最早对应文件距中央发文的天数；点开可回地方原文。
+            "超出窗口"指该地栏目覆盖不到这一天——既不能说做了，也不能说没做。
+          </p>
         </header>
         <div
           className="trf-matrix"
@@ -319,6 +376,18 @@ export function TransferView({ policies }: TransferViewProps) {
                       </>
                     )}
                     {cell.status === 'none' && <span className="trf-none">未见</span>}
+                    {cell.status === 'outside' && (
+                      <span
+                        className="trf-outside"
+                        title={
+                          cell.windowGap?.kind === 'after'
+                            ? `该地栏目只更新到 ${cell.windowGap.province}，这一天之后的发文无法观察`
+                            : `该地栏目最早只回溯到 ${cell.windowGap?.province}，此前的发文无法观察`
+                        }
+                      >
+                        超出窗口
+                      </span>
+                    )}
                     {cell.status === 'uncovered' && <span className="trf-none">—</span>}
                   </a>
                 );
@@ -331,12 +400,14 @@ export function TransferView({ policies }: TransferViewProps) {
           <span><i className="chip mid" />31—60 天</span>
           <span><i className="chip slow" />60 天以上</span>
           <span><i className="chip pre" />地方早于中央</span>
+          <span><i className="chip outside" />超出该地观测窗</span>
         </div>
       </section>
 
       <section className="trf-card">
         <header className="trf-card-head">
-          <h2>读出来的三件事</h2>
+          <h2>这批数据能读出什么</h2>
+          <p>每一条都由上面的矩阵直接算出，可回到原文逐条核对。</p>
         </header>
         <ol className="trf-findings">
           {result.findings.map((text) => (
@@ -388,6 +459,7 @@ export function TransferView({ policies }: TransferViewProps) {
           </div>
           <p className="trf-foot">
             注：一条文件可同时命中多个主题（例如"促进养老服务消费"同时计入养老与消费），因此各主题之和不等于文件总数。
+            另需注意各地样本量差异极大（从十几份到近四百份），占比只能横向看结构，不能当成强度比较。
           </p>
         </section>
       )}
@@ -410,7 +482,7 @@ export function TransferView({ policies }: TransferViewProps) {
           <tbody>
             {result.rows.flatMap((row) =>
               Object.entries(row.cells)
-                .filter(([, cell]) => cell.status !== 'none' && cell.status !== 'uncovered')
+                .filter(([, cell]) => cell.status !== 'none' && cell.status !== 'uncovered' && cell.status !== 'outside')
                 .map(([id, cell]) => {
                   const province = result.provinces.find((item) => item.id === id);
                   return (
@@ -445,10 +517,21 @@ export function TransferView({ policies }: TransferViewProps) {
         </header>
         <ul>
           <li>
+            <b>可用性按"近 90 天还在不在更新"判，不数历史存量。</b>门槛是近 90 天至少 6 份政策文件、且栏目更新到
+            10 月 20 日之后。有的栏目三年攒了几十条、近三个月一条没发，拿它判断"地方是否跟进"必然大量假阴性。
+          </li>
+          <li>
+            <b>每地的观测窗不一样宽，窗外的不做判断。</b>各栏目回溯深度从数月到数年不等，
+            {usable
+              .map((province) => `${province.short} ${province.earliest ?? '—'} 起`)
+              .join('、')}
+            。中央发文日落在窗口外的格子标"超出窗口"——既不能说做了，也不能说没做。
+          </li>
+          <li>
             <b>这是主题级配对，不是逐份文件配对。</b>中央与地方文件之间没有官方对应编号，只能按主题关键词在标题里匹配。
           </li>
           <li>
-            <b>"未见文件"不等于"地方没做"。</b>很多落实发生在部门文件、会议部署或不出文的执行里；本页只统计省级门户政策文件栏目中能抓到的文本。
+            <b>"未见文件"不等于"地方没做"。</b>很多落实发生在部门文件、会议部署或不出文的执行里；本页只统计各地门户政策文件栏目中能抓到的文本。
           </li>
           <li>
             <b>各栏目口径不一致。</b>
@@ -456,7 +539,7 @@ export function TransferView({ policies }: TransferViewProps) {
               .filter((province) => province.usable)
               .map((province) => `${province.short}（${province.kind}）`)
               .join('、')}
-            ——有的含部门文件，有的只收省政府及办公厅文件，横向比较时要记住这一层差异。
+            ——有的含部门文件，有的只收政府及办公厅文件，横向比较时要记住这一层差异。
           </li>
           <li>
             <b>只算"最早一份"。</b>同一主题下地方可能连发多份文件，这里只看首份日期，用于回答"什么时候开始动"，不评价后续力度。

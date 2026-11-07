@@ -54,6 +54,36 @@ export const LOCAL_SOURCES = [
     kind: '政府文件及解读',
   },
   {
+    id: 'hebei',
+    name: '河北省',
+    short: '河北',
+    level: '省级',
+    list: 'https://www.hebei.gov.cn/columns/49f13cc2-db03-4d0c-b4fe-2f3f659d3b6e/index.html',
+    page: null,
+    maxPages: 1,
+    kind: '省政府及办公厅文件',
+  },
+  {
+    id: 'shanxi',
+    name: '山西省',
+    short: '山西',
+    level: '省级',
+    list: 'http://www.shanxi.gov.cn/zfxxgk/',
+    page: null,
+    maxPages: 1,
+    kind: '政府信息公开目录',
+  },
+  {
+    id: 'guangzhou',
+    name: '广州市',
+    short: '广州',
+    level: '市级（副省级省会）',
+    list: 'https://www.gz.gov.cn/zwgk/',
+    page: null,
+    maxPages: 1,
+    kind: '市政府及部门文件',
+  },
+  {
     id: 'shaanxi',
     name: '陕西省',
     short: '陕西',
@@ -71,7 +101,9 @@ const ITEM_RE =
   /<a[^>]+href="([^"]+)"[^>]*>\s*([^<]{6,120}?)\s*<\/a>[\s\S]{0,160}?(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})/g;
 
 // 人事任免、表彰、批复、常务会议报道不是政策工具，混进来会把"地方跟进"算早。
-const NOISE = /(任免|任职|免职|职务任免|工作分工|表彰|表扬|烈士|聘任|追认|奖的决定|任免职|常务会议|主持召开)/;
+// 图解、图表、一图读懂是解读类二次加工，不是发文本体，必须挡在语料外。
+const NOISE =
+  /(任免|任职|免职|职务任免|工作分工|表彰|表扬|烈士|聘任|追认|奖的决定|任免职|常务会议|主持召开|【图解】|\[图解\]|（图解）|图表[:：]|一图读懂)/;
 
 export function parseList(html, baseUrl) {
   const out = [];
@@ -94,6 +126,9 @@ export function parseList(html, baseUrl) {
 }
 
 const isValidDoc = (title) => title.length >= 8 && !NOISE.test(title);
+
+// 判定"这是一份政策工具类文件"的标题特征，与前端 transfer.ts 的 DOC_LIKE 保持一致。
+const DOC_WORD = /(通知|意见|方案|办法|措施|规划|细则|实施|规定|指引|清单|计划|决定|批复)/;
 
 async function fetchProvince(source, { since, onLog }) {
   const items = new Map();
@@ -164,6 +199,7 @@ export async function collectLocals({ since = '2026-05-01', provinces, onLog } =
     onLog?.(`${province.short} 正文抓取完成：${targets.length} 篇`);
   });
   onLog?.(`正文合计 ${bodyDone} 篇`);
+  const cutoff = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
   return {
     at: new Date().toISOString(),
     since,
@@ -180,6 +216,9 @@ export async function collectLocals({ since = '2026-05-01', provinces, onLog } =
       kind,
       list,
       count: items.length,
+      // 近 90 天的文件类条目数：判断"这个栏目还在不在更新"的唯一可靠信号。
+      // 只看总条数会被历史存量骗——有的栏目三年攒了几十条，近三个月一条没发。
+      recentDocs: items.filter((item) => item.date >= cutoff && DOC_WORD.test(item.title)).length,
       earliest: items.at(-1)?.date ?? null,
       latest: items[0]?.date ?? null,
       errors,
