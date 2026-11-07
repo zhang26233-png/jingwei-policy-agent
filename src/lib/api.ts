@@ -194,3 +194,8 @@ export function backfillAttachments(all = false) {
     180000,
   );
 }
+
+/** 地方政策语料：用于央地传导测度，抓取由服务端离线跑，这里只读结果 */
+export function fetchLocals() {
+  return request<import('./transfer').LocalPayload>('/api/locals', undefined, 30000);
+}

@@ -10,6 +10,7 @@ import {
   Menu,
   Network,
   Radar,
+  Route,
   ShieldCheck,
   X,
 } from 'lucide-react';
@@ -28,6 +29,7 @@ import { CompareView } from './views/CompareView';
 import { MethodView } from './views/MethodView';
 import { AuditView } from './views/AuditView';
 import { SynergyView } from './views/SynergyView';
+import { TransferView } from './views/TransferView';
 
 const NAV_ITEMS: { id: ViewName; label: string; icon: typeof FileSearch }[] = [
   { id: 'briefing', label: '一键研判', icon: Radar },
@@ -35,6 +37,7 @@ const NAV_ITEMS: { id: ViewName; label: string; icon: typeof FileSearch }[] = [
   { id: 'impact', label: '省级影响', icon: Map },
   { id: 'compare', label: '政策对比', icon: GitCompareArrows },
   { id: 'synergy', label: '协同测度', icon: Network },
+  { id: 'transfer', label: '央地传导', icon: Route },
   { id: 'audit', label: '质量体检', icon: ClipboardCheck },
   { id: 'workspace', label: '自由追问', icon: FileSearch },
   { id: 'method', label: '方法与边界', icon: ShieldCheck },
@@ -258,6 +261,7 @@ function App() {
         requestedView === 'compare' ||
         requestedView === 'synergy' ||
         requestedView === 'audit' ||
+        requestedView === 'transfer' ||
         requestedView === 'method'
       ) {
         setView(requestedView);
@@ -478,6 +482,7 @@ function App() {
       {view === 'synergy' && (
         <SynergyView policies={corpusPolicies} onOpenPolicy={setSelectedPolicyId} />
       )}
+      {view === 'transfer' && <TransferView policies={corpusPolicies} />}
       {view === 'audit' && <AuditView onOpenPolicy={setSelectedPolicyId} />}
       {view === 'method' && <MethodView sources={corpus.sources} />}
 

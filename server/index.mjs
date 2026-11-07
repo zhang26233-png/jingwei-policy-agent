@@ -11,9 +11,15 @@ import { fetchHtml, extractArticle, mapLimit } from './net.mjs';
 import { load, save, getPolicies, upsertPolicies, recordRun, summary } from './store.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DIST = path.join(ROOT, 'dist');
+// 托管前端产物：本地用 vite 的 dist；部署环境里 dist 属于构建产物不会随源码上传，
+// 因此额外保留一份 webdist 作为随源码分发的静态目录。
+const DIST =
+  [path.join(ROOT, 'dist'), path.join(ROOT, 'webdist')].find((dir) =>
+    fs.existsSync(path.join(dir, 'index.html')),
+  ) || path.join(ROOT, 'dist');
 const PORT = Number(process.env.PORT || 8787);
-const HOST = process.env.HOST || '127.0.0.1';
+// 部署环境必须监听 0.0.0.0 才能被反向代理访问；本地访问 0.0.0.0 同样可用。
+const HOST = process.env.HOST || '0.0.0.0';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -305,6 +311,21 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === '/api/audit' && req.method === 'GET') {
     return json(res, 200, buildAudit(getPolicies()));
+  }
+
+  // 地方政策语料：由 scripts/collect-locals.mjs 落盘，读不到就如实返回空，
+  // 前端据此显示"尚未抓取"，而不是编一份看起来有数据的矩阵。
+  if (url.pathname === '/api/locals' && req.method === 'GET') {
+    const file = path.join(ROOT, 'data', 'locals.json');
+    if (!fs.existsSync(file)) {
+      return json(res, 200, { ready: false, at: null, coverage: null, provinces: [] });
+    }
+    try {
+      const payload = JSON.parse(fs.readFileSync(file, 'utf8'));
+      return json(res, 200, { ready: true, ...payload });
+    } catch (error) {
+      return json(res, 200, { ready: false, at: null, coverage: null, provinces: [], error: error.message });
+    }
   }
 
   if (url.pathname === '/api/collect' && req.method === 'POST') {

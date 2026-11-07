@@ -1,0 +1,612 @@
+/* 央地传导页：时间轴 + 响应矩阵 + 注意力热力。
+   配色跟随 theme.css 的情报终端深色底：底色不用白，强调色用信号青。 */
+
+.trf-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px 84px;
+}
+
+.trf-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.trf-head-main {
+  min-width: 0;
+}
+
+.trf-kicker {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--green);
+  opacity: 0.8;
+}
+
+.trf-head h1 {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: clamp(21px, 3.2vw, 29px);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.trf-head p {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--muted);
+}
+
+.trf-muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.trf-hero {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.trf-hero-card {
+  min-width: 124px;
+  padding: 12px 14px 13px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper-2);
+  display: grid;
+  gap: 1px;
+}
+
+.trf-hero-card span {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.trf-hero-card b {
+  font-family: var(--serif);
+  font-size: 25px;
+  line-height: 1.25;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.trf-hero-card b small {
+  font-size: 13px;
+  color: var(--muted);
+  font-family: var(--sans);
+}
+
+.trf-hero-card em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--muted-2);
+}
+
+/* 覆盖率提示条：整页怎么读由它决定，不能做成折叠提示 */
+.trf-banner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 13px 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 194, 71, 0.28);
+  border-left: 3px solid var(--amber);
+  border-radius: 4px;
+  background: rgba(255, 194, 71, 0.07);
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.8;
+}
+
+.trf-banner svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--amber);
+}
+
+.trf-banner b {
+  color: var(--amber);
+}
+
+.trf-banner strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.trf-prov-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.trf-prov {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 9px 11px;
+  background: var(--paper-2);
+}
+
+.trf-prov.off {
+  background: transparent;
+  border-style: dashed;
+}
+
+.trf-prov-name {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.trf-prov-name span {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--muted-2);
+}
+
+.trf-prov.ok .trf-prov-name span {
+  color: var(--green);
+}
+
+.trf-prov-meta {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.trf-prov-why {
+  font-size: 11px;
+  color: var(--rust);
+  line-height: 1.6;
+  margin-top: 3px;
+}
+
+.trf-card {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper-2);
+  padding: 20px 22px 22px;
+  margin-bottom: 16px;
+}
+
+.trf-card-head {
+  margin-bottom: 14px;
+}
+
+.trf-card-head h2 {
+  margin: 0 0 6px;
+  font-family: var(--serif);
+  font-size: 16.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.trf-card-head p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--muted);
+  max-width: 78ch;
+}
+
+/* 时间轴：左侧标签用 HTML，右侧绘图用 SVG，中文长标题不受 SVG 断行限制 */
+.trf-timeline {
+  display: grid;
+  grid-template-columns: 186px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.trf-tl-labels {
+  display: grid;
+  grid-auto-rows: 46px;
+  padding-top: 22px;
+}
+
+.trf-tl-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  padding-right: 8px;
+}
+
+.trf-tl-label b {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.trf-tl-label span {
+  font-size: 10.5px;
+  color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.trf-tl-plot svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.trf-tl-plot .trf-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.trf-tl-plot .trf-row {
+  stroke: rgba(120, 214, 190, 0.09);
+  stroke-width: 1;
+}
+
+.trf-tl-plot .trf-central {
+  stroke: var(--rust);
+  stroke-width: 1.4;
+  stroke-dasharray: 3 3;
+}
+
+.trf-tl-plot .trf-axis {
+  fill: var(--muted);
+  font-size: 10.5px;
+  font-family: var(--mono);
+}
+
+.trf-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.trf-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trf-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.trf-legend i.hollow {
+  background: transparent;
+  border: 1.6px solid var(--green);
+}
+
+.trf-legend i.dash {
+  width: 14px;
+  height: 0;
+  border-radius: 0;
+  border-top: 1.4px dashed var(--rust);
+}
+
+.trf-legend i.chip {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.trf-legend i.chip.fast { background: rgba(46, 230, 178, 0.2); }
+.trf-legend i.chip.mid { background: rgba(255, 194, 71, 0.2); }
+.trf-legend i.chip.slow { background: rgba(255, 143, 107, 0.2); }
+.trf-legend i.chip.pre { background: rgba(127, 178, 255, 0.2); }
+
+.trf-legend-note {
+  margin-top: 12px;
+}
+
+/* 响应矩阵 */
+.trf-matrix {
+  display: grid;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.trf-mx-head {
+  padding: 8px 10px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-3);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.trf-mx-head.off {
+  color: var(--muted-2);
+}
+
+.trf-mx-head em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--rust);
+  opacity: 0.85;
+}
+
+.trf-mx-row {
+  display: contents;
+}
+
+.trf-mx-label {
+  padding: 9px 10px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 1px;
+  background: var(--paper-2);
+}
+
+.trf-mx-label b {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.trf-mx-label span {
+  font-size: 10.5px;
+  color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.trf-mx-cell {
+  display: grid;
+  place-content: center;
+  gap: 1px;
+  padding: 9px 6px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-decoration: none;
+  text-align: center;
+  transition: background 0.15s ease;
+}
+
+.trf-mx-cell b {
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.trf-mx-cell span {
+  font-size: 10px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.trf-mx-cell.fast { background: rgba(46, 230, 178, 0.12); }
+.trf-mx-cell.fast b { color: var(--green); }
+.trf-mx-cell.mid { background: rgba(255, 194, 71, 0.12); }
+.trf-mx-cell.mid b { color: var(--amber); }
+.trf-mx-cell.slow { background: rgba(255, 143, 107, 0.12); }
+.trf-mx-cell.slow b { color: var(--rust); }
+.trf-mx-cell.pre { background: rgba(127, 178, 255, 0.1); }
+.trf-mx-cell.pre b { color: var(--blue); }
+.trf-mx-cell.none { background: transparent; }
+
+.trf-mx-cell:hover {
+  outline: 1.5px solid var(--green);
+  outline-offset: -1.5px;
+}
+
+.trf-none {
+  font-size: 11px;
+  color: var(--muted-2);
+}
+
+/* 结论 */
+.trf-findings {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 9px;
+}
+
+.trf-findings li {
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+/* 注意力热力 */
+.trf-heat {
+  display: grid;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.trf-heat-head {
+  padding: 7px 9px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-3);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.trf-heat-head em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.trf-heat-row {
+  display: contents;
+}
+
+.trf-heat-label {
+  padding: 8px 9px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--ink-soft);
+  background: var(--paper-2);
+}
+
+.trf-heat-cell {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 6px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
+.trf-heat-cell b {
+  font-size: 12.5px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.trf-heat-cell span {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.trf-foot {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  color: var(--muted-2);
+  line-height: 1.7;
+}
+
+/* 明细表 */
+.trf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.trf-table th {
+  text-align: left;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line-strong);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.trf-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink-soft);
+  vertical-align: top;
+}
+
+.trf-table tr.pre td {
+  color: var(--muted);
+}
+
+.trf-table a {
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  border-bottom: 1px dotted var(--line-strong);
+}
+
+.trf-table a:hover {
+  color: var(--green);
+  border-bottom-color: var(--green);
+}
+
+.trf-num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.trf-scope ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 7px;
+}
+
+.trf-scope li {
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+}
+
+.trf-empty {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 4px;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: var(--muted);
+  max-width: 78ch;
+}
+
+@media (max-width: 900px) {
+  .trf-hero {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .trf-hero-card {
+    flex: 1 1 120px;
+  }
+  .trf-timeline {
+    grid-template-columns: 132px minmax(0, 1fr);
+  }
+  .trf-matrix,
+  .trf-heat {
+    overflow-x: auto;
+  }
+}
+
+/* 疑似承接：只做弱提示，不能和"确认跟进"用同一套颜色 */
+.trf-mx-cell.likely {
+  background: rgba(127, 178, 255, 0.05);
+}
+
+.trf-mx-cell.likely b {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 11.5px;
+}
+
+.trf-legend i.dashed {
+  border-style: dashed;
+  border-color: var(--muted);
+}
+
+.trf-table tr.likely td {
+  color: var(--muted);
+}
