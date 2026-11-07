@@ -570,6 +570,67 @@ export function buildTransfer(payload: LocalPayload | null, policies: { id: stri
 }
 
 // ---------------------------------------------------------------------------
+// 时滞排行：把矩阵里所有"已跟进"的格子拉平，按天数从小到大排。
+//
+// 矩阵回答的是"谁接了"，回答不了"差异有多大"。老师问的原话是"时间差是不是有差异"，
+// 那需要的是分布形状而不是格子——7 组样本画不出概率分布，能画且诚实的只有排序条形图：
+// 每根条是一个已观察到的跟进，长短就是天数，中位线告诉你典型值在哪。
+// ---------------------------------------------------------------------------
+
+export interface LagRankItem {
+  provinceId: string;
+  province: string;
+  themeId: string;
+  theme: string;
+  lag: number;
+  date: string;
+  centralDate: string;
+  title: string;
+  url: string;
+}
+
+export interface LagRanking {
+  items: LagRankItem[];
+  median: number | null;
+  max: number;
+  /** 30 天内 / 31—60 天 / 60 天以上 各几组，用来写结论句 */
+  bands: { fast: number; mid: number; slow: number };
+}
+
+export function buildLagRanking(result: TransferResult): LagRanking {
+  const items: LagRankItem[] = [];
+  for (const row of result.rows) {
+    for (const province of result.provinces) {
+      const cell = row.cells[province.id];
+      if (!cell || cell.status !== 'respond') continue;
+      items.push({
+        provinceId: province.id,
+        province: province.short,
+        themeId: row.theme.id,
+        theme: row.theme.short,
+        lag: cell.lag ?? 0,
+        date: cell.date ?? '',
+        centralDate: row.centralDate,
+        title: cell.title ?? '',
+        url: cell.url ?? '',
+      });
+    }
+  }
+  items.sort((a, b) => a.lag - b.lag || a.province.localeCompare(b.province));
+
+  return {
+    items,
+    median: median(items.map((item) => item.lag)),
+    max: items.reduce((max, item) => Math.max(max, item.lag), 0),
+    bands: {
+      fast: items.filter((item) => item.lag <= 30).length,
+      mid: items.filter((item) => item.lag > 30 && item.lag <= 60).length,
+      slow: items.filter((item) => item.lag > 60).length,
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // 政策注意力分布：不依赖"与中央一一对应"，只看各省自己在关注什么。
 // 这一块的数据量比主题匹配大得多，用来回答"地区之间存在哪些结构性差异"。
 // ---------------------------------------------------------------------------

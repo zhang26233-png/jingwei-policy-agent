@@ -32,7 +32,7 @@ const parse = (html) => {
   return out;
 };
 
-await mapLimit(CANDS, 3, async ([id, name, url]) => {
+await mapLimit(CANDS, 3, async ([, name, url]) => {
   try {
     const html = await fetchHtml(url, { timeout: 12000 });
     const items = parse(html);

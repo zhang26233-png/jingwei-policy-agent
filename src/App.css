@@ -5080,3 +5080,22 @@ a {
     display: none;
   }
 }
+
+/* 口径说明块：和上面的地图免责声明（10px 灰）分开。
+   免责声明是"这图不能当权威边界"，弱化即可；这一块是"这分数怎么来的、和另一页什么关系"，
+   答辩时会被追问，必须读得清。 */
+.map-scope {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--ink-soft);
+  background: rgba(46, 230, 178, 0.05);
+  border-left: 2px solid rgba(46, 230, 178, 0.42);
+  border-radius: 0 4px 4px 0;
+}
+
+.map-scope strong {
+  color: var(--green-2);
+  font-weight: 600;
+}

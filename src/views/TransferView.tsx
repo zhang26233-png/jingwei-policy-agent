@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight, Info } from 'lucide-react';
+import { ArrowUpRight, Check, Copy, Download, Info } from 'lucide-react';
 import type { Policy } from '../types';
 import { fetchLocals } from '../lib/api';
-import { buildAttention, buildTransfer, regionOf, type Cell, type LocalPayload } from '../lib/transfer';
+import { buildAttention, buildLagRanking, buildTransfer, regionOf, type Cell, type LocalPayload } from '../lib/transfer';
+import { copyText, downloadPng, drawRankChart } from '../lib/exportImage';
 import './transfer.css';
 
 interface TransferViewProps {
@@ -21,6 +22,7 @@ export function TransferView({ policies }: TransferViewProps) {
   const [payload, setPayload] = useState<LocalPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -52,6 +54,7 @@ export function TransferView({ policies }: TransferViewProps) {
   );
 
   const attention = useMemo(() => (payload ? buildAttention(payload.provinces) : null), [payload]);
+  const ranking = useMemo(() => (result ? buildLagRanking(result) : null), [result]);
 
   if (loading) {
     return (
@@ -101,6 +104,53 @@ export function TransferView({ policies }: TransferViewProps) {
   const toneOf = (id: string) =>
     PROVINCE_TONE[Math.max(0, usable.findIndex((p) => p.id === id)) % PROVINCE_TONE.length];
 
+  // 导出的图必须能脱离网页独立成立：标题、样本量、排序、中位线、脚注一个都不能少。
+  // 只截一张没有脚注的图贴进报告，就会被读成"6 个地方代表全国"。
+  const exportRankingPng = () => {
+    if (!result || !ranking || ranking.items.length === 0) return;
+    const canvas = drawRankChart({
+      title: '中央发文之后，这几个地方隔了多久才动',
+      subtitle: `${result.coverage.usable} 个地方单元 × ${result.summary.themes} 项中央政策｜观察到 ${ranking.items.length} 组跟进｜中位 ${ranking.median ?? '—'} 天`,
+      items: ranking.items.map((item) => ({
+        label: `${item.province} · ${item.theme}`,
+        sub: `中央 ${item.centralDate} → 地方 ${item.date}`,
+        value: item.lag,
+      })),
+      median: ranking.median,
+      footnote: [
+        `样本：${usable.map((province) => province.name).join('、')}，共 ${result.coverage.items} 份地方政策文件。全国 31 个省级单位中仅 ${result.coverage.usable} 个地方门户（含 1 个市级）能稳定抓到政策文件列表，其余为拒访、脚本渲染或栏目停更，故本图为便利样本，不代表全国分布。`,
+        '读数提醒：条形长度只代表「首份对应文件的公开日期距中央发文的天数」，不评价配套资金与执行力度；某地占比偏高源于其栏目同时收录委办局与区级文件，属文件公开密度差异，不应读成行政效率差异。',
+      ],
+    });
+    // 文件名里的日期用「数据日期」而不是下载日期：同一份语料导出的图应该是同一张，
+    // 否则每周导一次会出现多个内容相同、名字不同的文件。
+    const stamp = (payload?.at ?? result.coverage.latest ?? 'latest').slice(0, 10);
+    downloadPng(canvas, `宏策智研_央地时滞_${stamp}.png`);
+  };
+
+  const copyRankingText = async () => {
+    if (!result || !ranking || ranking.items.length === 0) return;
+    const fastest = ranking.items[0];
+    const slowest = ranking.items[ranking.items.length - 1];
+    const lines = [
+      '中央发文之后地方跟进的时滞（宏策智研 · 央地传导）',
+      `样本：${result.coverage.usable} 个地方单元 × ${result.summary.themes} 项中央政策，共 ${result.coverage.items} 份地方政策文件；观察到 ${ranking.items.length} 组「中央发文—地方跟进」。`,
+      `中位时滞 ${ranking.median ?? '—'} 天；最快 ${fastest.province}·${fastest.theme} +${fastest.lag} 天，最慢 ${slowest.province}·${slowest.theme} +${slowest.lag} 天。`,
+      `分布：30 天内 ${ranking.bands.fast} 组，31—60 天 ${ranking.bands.mid} 组，60 天以上 ${ranking.bands.slow} 组。`,
+      '',
+      '逐条：',
+      ...ranking.items.map(
+        (item, index) =>
+          `${index + 1}. ${item.province}·${item.theme} +${item.lag} 天（中央 ${item.centralDate} → 地方 ${item.date}）`,
+      ),
+      '',
+      '口径：主题级配对而非逐份文件配对；只算首份对应文件；未见文件不等于地方未做；本样本为便利样本（东部与华北为主），不能外推为全国差异。',
+    ];
+    const ok = await copyText(lines.join('\n'));
+    setCopied(ok);
+    setTimeout(() => setCopied(false), 2200);
+  };
+
   const times: number[] = [];
   for (const row of result.rows) {
     times.push(toTime(row.centralDate));
@@ -132,6 +182,13 @@ export function TransferView({ policies }: TransferViewProps) {
     if (cell.status === 'outside') return 'outside';
     return 'none';
   };
+
+  // 刻度按 30 天一档取整，保证中位线与条形长度用同一把尺子。
+  const rankScale = Math.max(30, Math.ceil((ranking?.max ?? 0) / 30) * 30);
+  const rankTicks: number[] = [];
+  for (let day = 0; day <= rankScale; day += 30) rankTicks.push(day);
+  const medianPct = ranking?.median != null ? (ranking.median / rankScale) * 100 : null;
+  const bandOf = (lag: number) => (lag <= 30 ? 'fast' : lag <= 60 ? 'mid' : 'slow');
 
   return (
     <section className="trf-page">
@@ -318,6 +375,72 @@ export function TransferView({ policies }: TransferViewProps) {
           </span>
         </div>
       </section>
+
+      {ranking && ranking.items.length > 0 && (
+        <section className="trf-card">
+          <header className="trf-card-head">
+            <h2>时滞排行：中央发文之后，隔了多久才动</h2>
+            <p>
+              把上面所有已观察到的跟进拉平，按天数从短到长排。条形越长＝隔得越久，虚线是中位数。
+              这一张图回答"差异有多大"，下面的矩阵回答"谁接了"——两件事要分开看。
+            </p>
+            <div className="trf-actions">
+              <button className="trf-btn" onClick={exportRankingPng} title="白底、带样本说明，适合放进论文、报告或 PPT">
+                <Download size={14} /> 导出图（PNG）
+              </button>
+              <button className="trf-btn" onClick={copyRankingText}>
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? '已复制' : '复制文字'}
+              </button>
+            </div>
+          </header>
+
+          <div className="trf-rank">
+            <div className="trf-rank-axis">
+              <span />
+              <div className="trf-rank-axis-track">
+                {rankTicks.map((day) => (
+                  <i key={day} style={{ left: `${(day / rankScale) * 100}%` }}>
+                    {day}
+                  </i>
+                ))}
+              </div>
+              <span className="trf-rank-axis-unit">天</span>
+            </div>
+
+            {ranking.items.map((item) => (
+              <div className="trf-rank-row" key={`${item.themeId}-${item.provinceId}`}>
+                <div className="trf-rank-label">
+                  <b>
+                    {item.province} · {item.theme}
+                  </b>
+                  <span>
+                    中央 {mmdd(item.centralDate)} → 地方 {mmdd(item.date)}
+                  </span>
+                </div>
+                <div className="trf-rank-track">
+                  <div
+                    className="trf-rank-bar"
+                    data-band={bandOf(item.lag)}
+                    style={{ width: `${Math.max(1.5, (item.lag / rankScale) * 100)}%` }}
+                    title={item.title}
+                  />
+                  {medianPct !== null && (
+                    <i className="trf-rank-med" style={{ left: `${medianPct}%` }} aria-hidden />
+                  )}
+                </div>
+                <div className="trf-rank-val">+{item.lag} 天</div>
+              </div>
+            ))}
+          </div>
+
+          <p className="trf-foot">
+            只画 {ranking.items.length} 组已观察到跟进的样本：30 天内 {ranking.bands.fast} 组、31—60 天{' '}
+            {ranking.bands.mid} 组、60 天以上 {ranking.bands.slow} 组，中位 {ranking.median ?? '—'} 天。
+            样本量这么小，能说的是"这几组之间的差有多大"，不能说是"全国的分布形状"——7 个点画不出分布。
+          </p>
+        </section>
+      )}
 
       <section className="trf-card">
         <header className="trf-card-head">
@@ -516,6 +639,12 @@ export function TransferView({ policies }: TransferViewProps) {
           <h2>口径与边界</h2>
         </header>
         <ul>
+          <li>
+            <b>这一页和「省级影响」不是同一套东西，不能互相印证。</b>省级影响给全国 31 个省级单位打的分数，
+            是"政策渠道权重 × 省份经济结构"的<strong>推算值</strong>——不依赖任何地方发文，所以每个省都有分。
+            本页的时滞是<strong>实测值</strong>——只在抓得到政策文件的这 {result.coverage.usable} 个地方单元存在，
+            抓不到的地方宁可留空。前者回答"如果落地，哪里受影响更大"，后者回答"实际发文隔了几天"；一个是模型，一个是观测。
+          </li>
           <li>
             <b>可用性按"近 90 天还在不在更新"判，不数历史存量。</b>门槛是近 90 天至少 6 份政策文件、且栏目更新到
             10 月 20 日之后。有的栏目三年攒了几十条、近三个月一条没发，拿它判断"地方是否跟进"必然大量假阴性。
