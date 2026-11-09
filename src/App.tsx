@@ -3,6 +3,7 @@ import {
   ArrowRight,
   Download,
   FileSearch,
+  FileText,
   GitCompareArrows,
   Library,
   Map,
@@ -30,6 +31,7 @@ import { MethodView } from './views/MethodView';
 import { AuditView } from './views/AuditView';
 import { SynergyView } from './views/SynergyView';
 import { TransferView } from './views/TransferView';
+import { ReportView } from './views/ReportView';
 
 const NAV_ITEMS: { id: ViewName; label: string; icon: typeof FileSearch }[] = [
   { id: 'briefing', label: '一键研判', icon: Radar },
@@ -38,6 +40,7 @@ const NAV_ITEMS: { id: ViewName; label: string; icon: typeof FileSearch }[] = [
   { id: 'compare', label: '政策对比', icon: GitCompareArrows },
   { id: 'synergy', label: '协同测度', icon: Network },
   { id: 'transfer', label: '央地传导', icon: Route },
+  { id: 'report', label: '研究报告', icon: FileText },
   { id: 'audit', label: '质量体检', icon: ClipboardCheck },
   { id: 'workspace', label: '自由追问', icon: FileSearch },
   { id: 'method', label: '方法与边界', icon: ShieldCheck },
@@ -262,6 +265,7 @@ function App() {
         requestedView === 'synergy' ||
         requestedView === 'audit' ||
         requestedView === 'transfer' ||
+        requestedView === 'report' ||
         requestedView === 'method'
       ) {
         setView(requestedView);
@@ -483,6 +487,7 @@ function App() {
         <SynergyView policies={corpusPolicies} onOpenPolicy={setSelectedPolicyId} />
       )}
       {view === 'transfer' && <TransferView policies={corpusPolicies} />}
+      {view === 'report' && <ReportView policies={corpusPolicies} />}
       {view === 'audit' && <AuditView onOpenPolicy={setSelectedPolicyId} />}
       {view === 'method' && <MethodView sources={corpus.sources} />}
 

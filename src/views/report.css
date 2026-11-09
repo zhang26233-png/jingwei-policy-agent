@@ -1,0 +1,197 @@
+/* 研究报告页：外壳跟随情报终端深色主题，中间的 A4 纸维持白底——
+   报告是用来发出去和打印的，预览必须和最终文件长得一样，不能套深色皮肤。 */
+
+.rpt-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 24px 84px;
+}
+
+.rpt-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.rpt-head > div:first-child {
+  min-width: 0;
+  flex: 1 1 460px;
+}
+
+.rpt-kicker {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--green);
+  opacity: 0.8;
+}
+
+.rpt-head h1 {
+  margin: 0 0 10px;
+  font-family: var(--serif);
+  font-size: clamp(21px, 3.2vw, 29px);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.rpt-head p {
+  margin: 0;
+  max-width: 66ch;
+  font-size: 13px;
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+.rpt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rpt-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--green-3);
+  border: 1px solid var(--green);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.rpt-actions button:hover:not(:disabled) {
+  background: var(--green);
+  color: #06110d;
+}
+
+.rpt-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rpt-actions button.ghost {
+  background: transparent;
+  border-color: var(--line-strong);
+  color: var(--ink-soft);
+}
+
+.rpt-actions button.ghost:hover:not(:disabled) {
+  border-color: var(--green);
+  color: var(--green);
+  background: transparent;
+}
+
+.rpt-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: var(--paper-3);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+}
+
+.rpt-state.is-error {
+  border-color: var(--rust);
+  color: var(--rust);
+}
+
+.rpt-state code {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--green);
+}
+
+.rpt-state button {
+  margin-left: auto;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.rpt-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 22px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--muted-2);
+  background: var(--paper-3);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+}
+
+.rpt-facts b {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--green);
+}
+
+.rpt-facts-note {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--muted-2);
+}
+
+/* 预览框：白纸在深底上，留一点边距模拟装订，避免像"网页里嵌网页" */
+.rpt-frame {
+  display: block;
+  width: 100%;
+  height: min(86vh, 1180px);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: #edebe6;
+}
+
+.is-spinning {
+  animation: rpt-spin 0.9s linear infinite;
+}
+
+@keyframes rpt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .rpt-page {
+    padding: 28px 14px 60px;
+  }
+
+  .rpt-actions {
+    width: 100%;
+  }
+
+  .rpt-actions button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .rpt-facts-note {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .rpt-frame {
+    height: 70vh;
+  }
+}
