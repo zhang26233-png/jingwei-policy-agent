@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>中央发文之后：地方跟进的时滞与可见度 · 宏策智研</title>
+<style>
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0;
+  background: #edebe6;
+  font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei',-apple-system,'Segoe UI',sans-serif;
+  color: #16232b;
+  font-size: 14px;
+  line-height: 1.85;
+}
+.sheet {
+  width: 794px;
+  margin: 24px auto;
+  padding: 56px 64px 64px;
+  background: #ffffff;
+  box-shadow: 0 8px 30px rgba(22, 35, 43, 0.12);
+}
+.kicker {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #16232b;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: #465a64;
+}
+.kicker b { font-family: 'PingFang SC','Hiragino Sans GB','Microsoft YaHei',-apple-system,'Segoe UI',sans-serif; font-weight: 600; letter-spacing: 0.06em; }
+h1 {
+  margin: 28px 0 6px;
+  font-size: 30px;
+  line-height: 1.34;
+  letter-spacing: -0.01em;
+}
+.subtitle {
+  margin: 0 0 22px;
+  font-size: 14.5px;
+  color: #465a64;
+}
+.meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 24px;
+  padding: 14px 16px;
+  background: #f7f6f2;
+  border-left: 3px solid #c9b89a;
+  font-size: 12px;
+  color: #465a64;
+  margin-bottom: 30px;
+}
+.meta span b { color: #16232b; font-weight: 600; }
+h2 {
+  margin: 34px 0 12px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #dde4e7;
+  font-size: 18px;
+}
+h2 .num {
+  display: inline-block;
+  margin-right: 8px;
+  color: #c9b89a;
+  font-weight: 700;
+}
+h3 { margin: 22px 0 8px; font-size: 14.5px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 14px; padding-left: 22px; }
+li { margin-bottom: 6px; }
+.lead {
+  padding: 18px 20px;
+  background: #f8f7f3;
+  border: 1px solid #dde4e7;
+  margin-bottom: 8px;
+}
+.lead ol { margin: 0; padding-left: 20px; }
+.lead li { margin-bottom: 9px; line-height: 1.78; }
+.lead li b { color: #1f6f52; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin: 10px 0 6px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 12px;
+  color: #465a64;
+  padding-bottom: 6px;
+}
+caption b { color: #16232b; }
+th {
+  text-align: left;
+  font-weight: 600;
+  padding: 7px 8px;
+  border-top: 1.5px solid #16232b;
+  border-bottom: 1px solid #16232b;
+  background: #fafaf7;
+  white-space: normal;
+}
+td { padding: 7px 8px; border-bottom: 1px solid #eef2f4; vertical-align: top; word-break: break-word; }
+/* 日期一旦允许换行就会被拆成「2026/08/1」+「8」，比溢出更难读 */
+td.date { white-space: nowrap; font-size: 11.5px; }
+tbody tr:last-child td { border-bottom: 1.5px solid #dde4e7; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+figure { margin: 18px 0 22px; }
+figure svg { display: block; }
+figcaption {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: #465a64;
+  line-height: 1.7;
+}
+figcaption b { color: #16232b; }
+.source { margin-top: 4px; font-size: 10.5px; color: #8496a0; }
+.note {
+  padding: 11px 14px;
+  background: #fbf8f1;
+  border-left: 3px solid #b07d24;
+  font-size: 12.5px;
+  color: #465a64;
+  margin: 14px 0;
+}
+.warn {
+  padding: 11px 14px;
+  background: #fbf2ef;
+  border-left: 3px solid #a4442f;
+  font-size: 12.5px;
+  color: #465a64;
+  margin: 14px 0;
+}
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 14px 0; }
+.card { padding: 12px 14px; border: 1px solid #dde4e7; background: #fcfcfa; }
+.card h4 { margin: 0 0 6px; font-size: 12.5px; }
+.card ul { margin: 0; padding-left: 18px; font-size: 12px; }
+.card.ok h4 { color: #1f6f52; }
+.card.no h4 { color: #a4442f; }
+.foot {
+  margin-top: 36px;
+  padding-top: 14px;
+  border-top: 1px solid #dde4e7;
+  font-size: 10.5px;
+  color: #8496a0;
+  line-height: 1.75;
+}
+@media print {
+  body { background: #ffffff; }
+  .sheet { width: auto; margin: 0; padding: 0; box-shadow: none; }
+  figure, table { break-inside: avoid; }
+  h2 { break-after: avoid; }
+}
+@media (max-width: 860px) {
+  .sheet { width: auto; margin: 0; padding: 28px 20px; }
+  .two-col, .meta { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="kicker">
+    <b>宏策智研 · 政策证据工作台</b>
+    <span>政策传导观察 · 第 01 期</span>
+  </div>
+
+  <h1>中央发文之后：地方跟进的时滞与可见度</h1>
+  <p class="subtitle">基于 6 个地方单元、18 个政策领域、107 组可判配对的实测观察</p>
+
+  <div class="meta">
+    <span><b>报告日期</b>　2026年11月9日 23:40</span>
+    <span><b>数据快照</b>　2026/11/07</span>
+    <span><b>中央语料</b>　98 份（2026/07/31 至 2026/11/04）</span>
+    <span><b>地方语料</b>　8 个单元接通 / 6 个可用</span>
+  </div>
+
+  <h2><span class="num">摘要</span>核心结论</h2>
+  <div class="lead">
+    <ol>
+      <li><b>7 组可确认的跟进，中位时滞 16 天。</b>在 107 组可判配对中，能确认"中央发文后地方出台同领域文件"的只有 7 组（6.5%）。典型情况下，地方在中央发文后约两周半内出文。</li>
+      <li><b>差异不在"有没有"，而在"快与慢相差 12.8 倍"。</b>最快 +6 天（北京·公积金），最慢 +77 天（河北·电力）；5 组落在 30 天内，1 组在 31—60 天，1 组超过 60 天。</li>
+      <li><b>跨地区比较，首先比的是"看得见多少"。</b>北京观察到 5 组跟进，其栏目近 90 天公开 215 份文件；其余单元近 90 天公开量都在 10 份上下，各自只观察到 0—2 组。观察密度与时滞呈同向变化，不能读成行政效率差异。</li>
+      <li><b>"全国层面的差异"目前没有统计基础。</b>31 个省级单位中只有 8 个接通栏目、6 个满足更新门槛。本报告给出的是样本内差异，不是全国分布。</li>
+      <li><b>18 个领域中有 10 个出现了地方同类文件，其中 6 个有确认跟进。</b>其余 8 个领域在可判配对里零命中，这更可能是"落实不走省级门户的政策文件栏目"，而不是"没有落实"。</li>
+    </ol>
+  </div>
+
+  <h2><span class="num">一</span>研究问题与回答框架</h2>
+  <p>本报告回答一个具体问题：中央出台政策之后，地方是否出台对应文件、隔了多久，这个间隔在不同地区之间是否存在差异。这个问题需要拆成两半，因为可回答的程度完全不同。</p>
+  <div class="two-col">
+    <div class="card ok">
+      <h4>能回答</h4>
+      <ul>
+        <li>在已接通的地方栏目里，某主题是否出现了晚于中央发文的地方文件；</li>
+        <li>如果出现，两者相隔多少天，中位数与区间是多少；</li>
+        <li>不同地方单元之间，观察到的组数与间隔如何分布；</li>
+        <li>哪些主题出现了"地方先于中央"的同类文件。</li>
+      </ul>
+    </div>
+    <div class="card no">
+      <h4>不能回答</h4>
+      <ul>
+        <li>全国 31 个省级单位的时滞分布——只接通 8 个；</li>
+        <li>地方"是否落实"——只看到有没有出文，看不到执行；</li>
+        <li>哪些因素导致时滞差异——样本量不支持归因；</li>
+        <li>政策效果——本报告不涉及效果评估。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><span class="num">二</span>数据与方法</h2>
+  <p><b>中央语料。</b>来自国务院、财政部、国家发展改革委、人民银行、统计局等官方栏目，本期共 98 份政策文件，日期区间 2026/07/31 至 2026/11/04。据此设定 18 个政策领域的"中央锚点"：每个领域对应一份具体的中央文件及其发文日。</p>
+  <p><b>地方语料。</b>覆盖目标为 31 个省级单位；本轮对其中 8 个门户做栏目抓取并全部解析成功，其中 6 个满足可用性门槛。其余单位未纳入本轮采集——此前逐省探测显示，多数门户存在拒访、列表由脚本渲染或栏目长期停更，无法稳定取到政策文件列表。</p>门槛不是"历史存量够多"，而是"近 90 天至少 6 份政策类文件、且栏目更新晚于 2026-10-20"——一个三年攒了几十条、近三个月一条没发的栏目，用它判断"是否跟进"只会产出假阴性。</p>
+  <p><b>判定规则。</b>某格判为"确认跟进"需同时满足三条：地方文件标题命中该领域关键词；发布日期晚于中央发文日；文件属于政策文件而非事务性通知。第三条是必需的——早前的版本曾把"人工智能领域颠覆性技术方向储备课题征集""资质培训班通知"算成 +0 天响应，把时滞压到失真。</p>
+  <p><b>观测窗。</b>各单元栏目可回溯的时间范围不同。当中央发文日落在某单元的栏目窗口之外时，该格标为"超出观测窗"而不判"未见"——拿栏目边界当作政策事实，是最容易犯也最难发现的错误。</p>
+  <p><b>样本漏斗。</b>31 个省级单位 × 18 个领域 = 144 组名义配对；扣除 36 组不可用单元、1 组超出观测窗，得到 107 组可判配对。</p>
+
+  <h2><span class="num">三</span>发现一：典型时滞约两周，尾部拖到两个半月</h2>
+  <p>把 7 组确认跟进按天数排序，形状很不对称：5 组挤在 30 天内，中间只有 1 组，末端有 1 组超过 60 天。中位数 16 天，但均值会被末端拉高——这正是为什么报告用中位数描述"典型情况"。</p>
+  <figure>
+    <svg viewBox="0 0 664 306" width="100%" role="img" aria-label="央地时滞排行"><line x1="202.0" y1="42" x2="202.0" y2="284" stroke="#eef2f4" stroke-width="1"/><text x="202.0" y="34" text-anchor="middle" font-size="10.5" fill="#8496a0">0 天</text><line x1="331.3" y1="42" x2="331.3" y2="284" stroke="#eef2f4" stroke-width="1"/><text x="331.3" y="34" text-anchor="middle" font-size="10.5" fill="#8496a0">30 天</text><line x1="460.7" y1="42" x2="460.7" y2="284" stroke="#eef2f4" stroke-width="1"/><text x="460.7" y="34" text-anchor="middle" font-size="10.5" fill="#8496a0">60 天</text><line x1="590.0" y1="42" x2="590.0" y2="284" stroke="#eef2f4" stroke-width="1"/><text x="590.0" y="34" text-anchor="middle" font-size="10.5" fill="#8496a0">90 天</text><text x="190" y="67" text-anchor="end" font-size="12.5" fill="#16232b">北京 · 公积金</text><rect x="202" y="57" width="25.9" height="16" rx="2" fill="#1f6f52"/><text x="235.9" y="69" font-size="12" font-weight="600" fill="#465a64">+6 天</text><text x="190" y="99" text-anchor="end" font-size="12.5" fill="#16232b">河北 · 政务服务</text><rect x="202" y="89" width="25.9" height="16" rx="2" fill="#1f6f52"/><text x="235.9" y="101" font-size="12" font-weight="600" fill="#465a64">+6 天</text><text x="190" y="131" text-anchor="end" font-size="12.5" fill="#16232b">北京 · 科技融合</text><rect x="202" y="121" width="60.4" height="16" rx="2" fill="#1f6f52"/><text x="270.4" y="133" font-size="12" font-weight="600" fill="#465a64">+14 天</text><text x="190" y="163" text-anchor="end" font-size="12.5" fill="#16232b">北京 · 体育赛事</text><rect x="202" y="153" width="69.0" height="16" rx="2" fill="#1f6f52"/><text x="279.0" y="165" font-size="12" font-weight="600" fill="#465a64">+16 天</text><text x="190" y="195" text-anchor="end" font-size="12.5" fill="#16232b">北京 · 政务服务</text><rect x="202" y="185" width="86.2" height="16" rx="2" fill="#1f6f52"/><text x="296.2" y="197" font-size="12" font-weight="600" fill="#465a64">+20 天</text><text x="190" y="227" text-anchor="end" font-size="12.5" fill="#16232b">北京 · 物流</text><rect x="202" y="217" width="228.5" height="16" rx="2" fill="#b07d24"/><text x="438.5" y="229" font-size="12" font-weight="600" fill="#465a64">+53 天</text><text x="190" y="259" text-anchor="end" font-size="12.5" fill="#16232b">河北 · 电力</text><rect x="202" y="249" width="332.0" height="16" rx="2" fill="#a4442f"/><text x="542.0" y="261" font-size="12" font-weight="600" fill="#465a64">+77 天</text><line x1="271.0" y1="42" x2="271.0" y2="284" stroke="#16232b" stroke-width="1.2" stroke-dasharray="5 4" opacity="0.55"/><text x="271.0" y="298" text-anchor="middle" font-size="10.5" fill="#16232b">中位 16 天</text></svg>
+    <figcaption><b>图 1　央地发文时滞排行（共 7 组确认跟进）。</b>条长即时滞天数，绿色为 30 天内、赭色 31—60 天、砖红 60 天以上；虚线为中位数 16 天。<div class="source">数据来源：中央政策语料（98 份）与 6 个地方单元的政策文件栏目，截至 2026/11/07。</div></figcaption>
+  </figure>
+  <p>末端的两组值得单独看：河北·电力 +77 天，与最快的一组相差 12.8 倍。这个跨度说明"地方跟进"不是一个统一的行政节奏，同一批中央文件在不同领域、不同地区的落地速度可以差一个数量级。</p>
+
+  <h2><span class="num">四</span>发现二：107 个格子里只有 7 组能确认</h2>
+  <p>矩阵图容易被误读成"大片空白说明地方没动"。真实的读法是：一格代表"某个领域的中央文件，在某地栏目里能否找到对应的后续文件"，而绝大多数格子是"没找到标题命中的文件"——它既可能是没出文，也可能是出在了部门文件、会议纪要或不出文的执行里。</p>
+  <figure>
+    <svg viewBox="0 0 664 400" width="100%" role="img" aria-label="响应矩阵"><text x="189.7" y="18" text-anchor="middle" font-size="11.5" fill="#16232b">北京</text><text x="189.7" y="30" text-anchor="middle" font-size="9.5" fill="#8496a0">215 份/90天</text><text x="273.0" y="18" text-anchor="middle" font-size="11.5" fill="#16232b">上海</text><text x="273.0" y="30" text-anchor="middle" font-size="9.5" fill="#8496a0">51 份/90天</text><text x="356.3" y="18" text-anchor="middle" font-size="11.5" fill="#16232b">广东</text><text x="356.3" y="30" text-anchor="middle" font-size="9.5" fill="#8496a0">10 份/90天</text><text x="439.7" y="18" text-anchor="middle" font-size="11.5" fill="#16232b">河北</text><text x="439.7" y="30" text-anchor="middle" font-size="9.5" fill="#8496a0">11 份/90天</text><text x="523.0" y="18" text-anchor="middle" font-size="11.5" fill="#16232b">广州</text><text x="523.0" y="30" text-anchor="middle" font-size="9.5" fill="#8496a0">9 份/90天</text><text x="606.3" y="18" text-anchor="middle" font-size="11.5" fill="#16232b">陕西</text><text x="606.3" y="30" text-anchor="middle" font-size="9.5" fill="#8496a0">8 份/90天</text><text x="140" y="46.5" text-anchor="end" font-size="11.5" fill="#465a64">体育赛事</text><rect x="151.0" y="36" width="77.3" height="14" rx="2" fill="#1f6f52"/><rect x="234.3" y="36" width="77.3" height="14" rx="2" fill="#b07d24"/><rect x="317.7" y="36" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="36" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="36" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="36" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="64.5" text-anchor="end" font-size="11.5" fill="#465a64">消费基建</text><rect x="151.0" y="54" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="234.3" y="54" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="54" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="54" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="54" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="54" width="77.3" height="14" rx="2" fill="#f5f2ea"/><text x="140" y="82.5" text-anchor="end" font-size="11.5" fill="#465a64">普惠养老</text><rect x="151.0" y="72" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="234.3" y="72" width="77.3" height="14" rx="2" fill="#b07d24"/><rect x="317.7" y="72" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="72" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="72" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="72" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="100.5" text-anchor="end" font-size="11.5" fill="#465a64">购房贴息</text><rect x="151.0" y="90" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="234.3" y="90" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="90" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="90" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="90" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="90" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="118.5" text-anchor="end" font-size="11.5" fill="#465a64">清欠回款</text><rect x="151.0" y="108" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="234.3" y="108" width="77.3" height="14" rx="2" fill="#d8c39a"/><rect x="317.7" y="108" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="108" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="108" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="108" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="136.5" text-anchor="end" font-size="11.5" fill="#465a64">AI+就业</text><rect x="151.0" y="126" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="234.3" y="126" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="126" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="126" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="126" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="126" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="154.5" text-anchor="end" font-size="11.5" fill="#465a64">农业保险</text><rect x="151.0" y="144" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="234.3" y="144" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="144" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="144" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="144" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="144" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="172.5" text-anchor="end" font-size="11.5" fill="#465a64">房车消费</text><rect x="151.0" y="162" width="77.3" height="14" rx="2" fill="#b07d24"/><rect x="234.3" y="162" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="162" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="162" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="162" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="162" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="190.5" text-anchor="end" font-size="11.5" fill="#465a64">新质生产力</text><rect x="151.0" y="180" width="77.3" height="14" rx="2" fill="#b07d24"/><rect x="234.3" y="180" width="77.3" height="14" rx="2" fill="#b07d24"/><rect x="317.7" y="180" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="180" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="180" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="180" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="208.5" text-anchor="end" font-size="11.5" fill="#465a64">科技融合</text><rect x="151.0" y="198" width="77.3" height="14" rx="2" fill="#1f6f52"/><rect x="234.3" y="198" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="198" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="198" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="198" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="198" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="226.5" text-anchor="end" font-size="11.5" fill="#465a64">房地产</text><rect x="151.0" y="216" width="77.3" height="14" rx="2" fill="#b07d24"/><rect x="234.3" y="216" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="216" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="216" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="216" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="216" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="244.5" text-anchor="end" font-size="11.5" fill="#465a64">公积金</text><rect x="151.0" y="234" width="77.3" height="14" rx="2" fill="#1f6f52"/><rect x="234.3" y="234" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="234" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="234" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="234" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="234" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="262.5" text-anchor="end" font-size="11.5" fill="#465a64">物流</text><rect x="151.0" y="252" width="77.3" height="14" rx="2" fill="#1f6f52"/><rect x="234.3" y="252" width="77.3" height="14" rx="2" fill="#b07d24"/><rect x="317.7" y="252" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="252" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="252" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="252" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="280.5" text-anchor="end" font-size="11.5" fill="#465a64">文化遗产</text><rect x="151.0" y="270" width="77.3" height="14" rx="2" fill="#d8c39a"/><rect x="234.3" y="270" width="77.3" height="14" rx="2" fill="#d8c39a"/><rect x="317.7" y="270" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="270" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="270" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="270" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="298.5" text-anchor="end" font-size="11.5" fill="#465a64">义务教育</text><rect x="151.0" y="288" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="234.3" y="288" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="288" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="288" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="288" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="288" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="316.5" text-anchor="end" font-size="11.5" fill="#465a64">出口退税</text><rect x="151.0" y="306" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="234.3" y="306" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="306" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="306" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="484.3" y="306" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="306" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="334.5" text-anchor="end" font-size="11.5" fill="#465a64">政务服务</text><rect x="151.0" y="324" width="77.3" height="14" rx="2" fill="#1f6f52"/><rect x="234.3" y="324" width="77.3" height="14" rx="2" fill="#b07d24"/><rect x="317.7" y="324" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="324" width="77.3" height="14" rx="2" fill="#1f6f52"/><rect x="484.3" y="324" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="324" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><text x="140" y="352.5" text-anchor="end" font-size="11.5" fill="#465a64">电力</text><rect x="151.0" y="342" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="234.3" y="342" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="317.7" y="342" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="401.0" y="342" width="77.3" height="14" rx="2" fill="#1f6f52"/><rect x="484.3" y="342" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="567.7" y="342" width="77.3" height="14" rx="2" fill="#e7ebed" opacity="0.85"/><rect x="102" y="370" width="9" height="9" rx="1.5" fill="#1f6f52"/><text x="115" y="378" font-size="10" fill="#8496a0">确认跟进</text><rect x="169" y="370" width="9" height="9" rx="1.5" fill="#b07d24"/><text x="182" y="378" font-size="10" fill="#8496a0">地方先行</text><rect x="236" y="370" width="9" height="9" rx="1.5" fill="#d8c39a"/><text x="249" y="378" font-size="10" fill="#8496a0">疑似承接</text><rect x="303" y="370" width="9" height="9" rx="1.5" fill="#e7ebed"/><text x="316" y="378" font-size="10" fill="#8496a0">未见</text></svg>
+    <figcaption><b>图 2　领域 × 地方单元 的响应矩阵（18 个领域 × 6 个单元）。</b>列顶标注该单元近 90 天公开文件数。深绿为确认跟进，赭色为地方先行，浅褐为疑似承接（正文反复提及但标题未命中），浅灰为未见。<div class="source">数据来源：同上。仅展示 6 个可用单元；不可用单元整列不画，避免用空白暗示"全国一致"。</div></figcaption>
+  </figure>
+  <figure>
+    <svg viewBox="0 0 664 112" width="100%" role="img" aria-label="可判组合状态构成"><rect x="0.0" y="22" width="43.4" height="34" fill="#1f6f52"/><rect x="43.4" y="22" width="49.6" height="34" fill="#b07d24"/><text x="68.3" y="44" text-anchor="middle" font-size="12" font-weight="600" fill="#ffffff">8</text><rect x="93.1" y="22" width="18.6" height="34" fill="#d8c39a"/><rect x="111.7" y="22" width="552.3" height="34" fill="#e7ebed"/><text x="387.9" y="44" text-anchor="middle" font-size="12" font-weight="600" fill="#465a64">89</text><rect x="0" y="67" width="9" height="9" rx="1.5" fill="#1f6f52"/><text x="14" y="76" font-size="10.5" fill="#465a64">确认跟进 7 组（6.5%）</text><rect x="300" y="67" width="9" height="9" rx="1.5" fill="#b07d24"/><text x="314" y="76" font-size="10.5" fill="#465a64">地方先行 8 组（7.5%）</text><rect x="0" y="87" width="9" height="9" rx="1.5" fill="#d8c39a"/><text x="14" y="96" font-size="10.5" fill="#465a64">疑似承接 3 组（2.8%）</text><rect x="300" y="87" width="9" height="9" rx="1.5" fill="#e7ebed"/><text x="314" y="96" font-size="10.5" fill="#465a64">未见 89 组（83.2%）</text></svg>
+    <figcaption><b>图 3　107 组可判配对的状态构成。</b>确认跟进 7 组（6.5%），地方先行 8 组，疑似承接 3 组，未见 89 组。<div class="source">疑似承接不计入时滞统计——正文提到不等于落实，混算会把时滞压短。</div></figcaption>
+  </figure>
+  <div class="note">把 89 组"未见"直接解释成"未落实"是本报告最容易犯的错。可核验的只有一件事：<b>在已接通的地方栏目里，没有找到标题层面的对应文件。</b></div>
+
+  <h2><span class="num">五</span>发现三：跨地区差异首先是可见度差异</h2>
+  <p>各单元观察到的跟进组数差别很大，但把"近 90 天公开文件数"一起画出来就能看出：跟进组数多的单元，恰恰是公开文件多的单元。这不是效率差异的证据，而是观察能力的差异——栏目公开得越密，能被匹配到的机会越多。</p>
+  <figure>
+    <svg viewBox="0 0 664 292" width="100%" role="img" aria-label="公开密度与跟进组数"><line x1="58" y1="240.0" x2="640" y2="240.0" stroke="#eef2f4"/><text x="48" y="243.5" text-anchor="end" font-size="10" fill="#8496a0">0</text><line x1="58" y1="203.7" x2="640" y2="203.7" stroke="#eef2f4"/><text x="48" y="207.2" text-anchor="end" font-size="10" fill="#8496a0">1</text><line x1="58" y1="167.3" x2="640" y2="167.3" stroke="#eef2f4"/><text x="48" y="170.8" text-anchor="end" font-size="10" fill="#8496a0">2</text><line x1="58" y1="131.0" x2="640" y2="131.0" stroke="#eef2f4"/><text x="48" y="134.5" text-anchor="end" font-size="10" fill="#8496a0">3</text><line x1="58" y1="94.7" x2="640" y2="94.7" stroke="#eef2f4"/><text x="48" y="98.2" text-anchor="end" font-size="10" fill="#8496a0">4</text><line x1="58" y1="58.3" x2="640" y2="58.3" stroke="#eef2f4"/><text x="48" y="61.8" text-anchor="end" font-size="10" fill="#8496a0">5</text><line x1="134.0" y1="22" x2="134.0" y2="240" stroke="#eef2f4" stroke-dasharray="2 3"/><text x="134.0" y="256" text-anchor="middle" font-size="10" fill="#8496a0">10</text><line x1="297.4" y1="22" x2="297.4" y2="240" stroke="#eef2f4" stroke-dasharray="2 3"/><text x="297.4" y="256" text-anchor="middle" font-size="10" fill="#8496a0">30</text><line x1="476.6" y1="22" x2="476.6" y2="240" stroke="#eef2f4" stroke-dasharray="2 3"/><text x="476.6" y="256" text-anchor="middle" font-size="10" fill="#8496a0">100</text><line x1="640.0" y1="22" x2="640.0" y2="240" stroke="#eef2f4" stroke-dasharray="2 3"/><text x="640.0" y="256" text-anchor="middle" font-size="10" fill="#8496a0">300</text><line x1="58" y1="240" x2="640" y2="240" stroke="#dde4e7"/><text x="349" y="284" text-anchor="middle" font-size="10.5" fill="#465a64">该单元近 90 天公开的政策类文件数（对数刻度）</text><text x="14" y="26" font-size="10.5" fill="#465a64">跟进组数</text><circle cx="100.8" cy="240.0" r="4.5" fill="#4a6a7a" opacity="0.9"/><text x="100.8" y="228.0" text-anchor="middle" font-size="10.5" fill="#16232b">陕西 0/17</text><circle cx="118.3" cy="240.0" r="4.5" fill="#4a6a7a" opacity="0.9"/><line x1="118.3" y1="235.0" x2="118.3" y2="219.0" stroke="#dde4e7" stroke-width="1"/><text x="118.3" y="215.0" text-anchor="middle" font-size="10.5" fill="#16232b">广州 0/18</text><circle cx="134.0" cy="240.0" r="4.5" fill="#4a6a7a" opacity="0.9"/><line x1="134.0" y1="235.0" x2="134.0" y2="206.0" stroke="#dde4e7" stroke-width="1"/><text x="134.0" y="202.0" text-anchor="middle" font-size="10.5" fill="#16232b">广东 0/18</text><circle cx="148.2" cy="167.3" r="4.5" fill="#4a6a7a" opacity="0.9"/><line x1="148.2" y1="162.3" x2="148.2" y2="120.3" stroke="#dde4e7" stroke-width="1"/><text x="148.2" y="116.3" text-anchor="middle" font-size="10.5" fill="#16232b">河北 2/18</text><circle cx="376.4" cy="240.0" r="4.5" fill="#4a6a7a" opacity="0.9"/><text x="376.4" y="228.0" text-anchor="middle" font-size="10.5" fill="#16232b">上海 0/18</text><circle cx="590.4" cy="58.3" r="4.5" fill="#4a6a7a" opacity="0.9"/><text x="590.4" y="46.3" text-anchor="middle" font-size="10.5" fill="#16232b">北京 5/18</text></svg>
+    <figcaption><b>图 4　文件公开密度与观察到的跟进组数。</b>横轴为该单元近 90 天公开的政策类文件数（对数刻度，否则最高值会把其余点压成一线），纵轴为确认跟进组数，点旁标注"跟进组数/可判组数"。<div class="source">仅 6 个观测点，本图只作描述，<b>不做回归、不做显著性判断</b>，也不支持"公开越多跟进越快"这类因果表述。</div></figcaption>
+  </figure>
+  <table>
+    <caption><b>表 1　地方单元台账</b>（按确认跟进组数排序）</caption>
+    <colgroup><col style="width:12%"/><col style="width:19%"/><col style="width:12%"/><col style="width:9%"/><col style="width:8%"/><col style="width:8%"/><col style="width:11%"/><col style="width:21%"/></colgroup>
+    <thead><tr><th>单元</th><th>层级</th><th class="num">近90天文件</th><th class="num">可判组</th><th class="num">跟进</th><th class="num">先行</th><th class="num">中位时滞</th><th>栏目更新至</th></tr></thead>
+    <tbody><tr>
+        <td>北京</td>
+        <td>省级（直辖市）</td>
+        <td class="num">215</td>
+        <td class="num">18</td>
+        <td class="num">5</td>
+        <td class="num">3</td>
+        <td class="num">+16</td>
+        <td>2026/11/06</td>
+      </tr><tr>
+        <td>河北</td>
+        <td>省级</td>
+        <td class="num">11</td>
+        <td class="num">18</td>
+        <td class="num">2</td>
+        <td class="num">0</td>
+        <td class="num">+42</td>
+        <td>2026/11/03</td>
+      </tr><tr>
+        <td>上海</td>
+        <td>省级（直辖市）</td>
+        <td class="num">51</td>
+        <td class="num">18</td>
+        <td class="num">0</td>
+        <td class="num">5</td>
+        <td class="num">—</td>
+        <td>2026/11/05</td>
+      </tr><tr>
+        <td>广东</td>
+        <td>省级</td>
+        <td class="num">10</td>
+        <td class="num">18</td>
+        <td class="num">0</td>
+        <td class="num">0</td>
+        <td class="num">—</td>
+        <td>2026/11/05</td>
+      </tr><tr>
+        <td>广州</td>
+        <td>市级（副省级省会）</td>
+        <td class="num">9</td>
+        <td class="num">18</td>
+        <td class="num">0</td>
+        <td class="num">0</td>
+        <td class="num">—</td>
+        <td>2026/11/04</td>
+      </tr><tr>
+        <td>陕西</td>
+        <td>省级</td>
+        <td class="num">8</td>
+        <td class="num">17</td>
+        <td class="num">0</td>
+        <td class="num">0</td>
+        <td class="num">—</td>
+        <td>2026/10/26</td>
+      </tr></tbody>
+  </table>
+  <table>
+    <caption><b>表 2　未纳入的单元及原因</b></caption>
+    <colgroup><col style="width:13%"/><col style="width:17%"/><col style="width:12%"/><col style="width:16%"/><col style="width:42%"/></colgroup>
+    <thead><tr><th>单元</th><th>层级</th><th class="num">近90天文件</th><th>栏目更新至</th><th>排除原因</th></tr></thead>
+    <tbody><tr>
+        <td>江苏</td>
+        <td>省级</td>
+        <td class="num">1</td>
+        <td>2026/10/30</td>
+        <td>近 90 天仅 1 份文件，栏目更新过疏</td>
+      </tr><tr>
+        <td>山西</td>
+        <td>省级</td>
+        <td class="num">4</td>
+        <td>2026/10/28</td>
+        <td>近 90 天仅 4 份文件，栏目更新过疏</td>
+      </tr></tbody>
+  </table>
+  <p class="source">未纳入不等于"没有跟进"，只表示该栏目更新过疏，无法支撑"是否跟进"的判断。</p>
+
+  <h2><span class="num">六</span>"全国层面"能说到什么程度</h2>
+  <p>这是本报告最需要克制的一节。把可得性单独画出来，是为了让读者一眼看到"全国"这个词的边界在哪里。</p>
+  <figure>
+    <svg viewBox="0 0 664 152" width="100%" role="img" aria-label="观测可得性"><text x="118" y="27" text-anchor="end" font-size="11.5" fill="#465a64">目标省级单位</text><rect x="128" y="14" width="300" height="18" rx="2" fill="#eef2f4"/><rect x="128" y="14" width="300.0" height="18" rx="2" fill="#c9b89a"/><text x="438" y="28" font-size="12" font-weight="600" fill="#16232b">31</text><text x="474" y="28" font-size="10" fill="#8496a0">按行政区划计</text><text x="118" y="73" text-anchor="end" font-size="11.5" fill="#465a64">实际接通栏目</text><rect x="128" y="60" width="300" height="18" rx="2" fill="#eef2f4"/><rect x="128" y="60" width="77.4" height="18" rx="2" fill="#c9b89a"/><text x="215.4193548387097" y="74" font-size="12" font-weight="600" fill="#16232b">8</text><text x="474" y="74" font-size="10" fill="#8496a0">门户可访问、栏目可解析</text><text x="118" y="119" text-anchor="end" font-size="11.5" fill="#465a64">满足更新门槛</text><rect x="128" y="106" width="300" height="18" rx="2" fill="#eef2f4"/><rect x="128" y="106" width="58.1" height="18" rx="2" fill="#1f6f52"/><text x="196.06451612903226" y="120" font-size="12" font-weight="600" fill="#16232b">6</text><text x="474" y="120" font-size="10" fill="#8496a0">近 90 天 ≥6 份且仍在更新</text></svg>
+    <figcaption><b>图 5　观测可得性。</b>31 个省级单位中，8 个栏目可解析，6 个满足"近 90 天 ≥6 份且仍在更新"的门槛，最终进入判定。<div class="source">未接通的单位多为门户反爬、栏目结构变更或列表由脚本渲染；这类缺口无法用推测补齐。</div></figcaption>
+  </figure>
+  <p>因此本报告的结论只对 6 个单元成立。要回答"全国层面是否存在差异"，需要的不是更强的模型，而是更多能稳定抓取的省级栏目——这是数据可得性问题，不是方法问题。</p>
+  <div class="warn"><b>明确不做的三件事：</b>①不给未接通省份插补时滞；②不用 7 组样本做地区间显著性检验；③不用"东部快、西部慢"这类叙事包装样本缺口。</div>
+
+  <h2><span class="num">七</span>明细与证据</h2>
+  <table>
+    <caption><b>表 3　确认跟进明细</b>（7 组，时滞单位为天）</caption>
+    <colgroup><col style="width:4%"/><col style="width:9%"/><col style="width:14%"/><col style="width:13%"/><col style="width:13%"/><col style="width:9%"/><col style="width:38%"/></colgroup>
+    <thead><tr><th>#</th><th>单元</th><th>领域</th><th>中央发文</th><th>地方发文</th><th class="num">时滞</th><th>地方文件（节选）</th></tr></thead>
+    <tbody><tr>
+        <td>1</td>
+        <td>北京</td>
+        <td>公积金</td>
+        <td class="date">2026/08/18</td>
+        <td class="date">2026/08/24</td>
+        <td class="num">+6</td>
+        <td>北京住房公积金管理委员会办公室关于2026住房公积金年度缴…</td>
+      </tr><tr>
+        <td>2</td>
+        <td>河北</td>
+        <td>政务服务</td>
+        <td class="date">2026/09/23</td>
+        <td class="date">2026/09/29</td>
+        <td class="num">+6</td>
+        <td>河北省人民政府办公厅关于印发河北省各级政务服务中心管理办法…</td>
+      </tr><tr>
+        <td>3</td>
+        <td>北京</td>
+        <td>科技融合</td>
+        <td class="date">2026/10/21</td>
+        <td class="date">2026/11/04</td>
+        <td class="num">+14</td>
+        <td>北京市发展和改革委员会北京市经济和信息化局等单位关于做好2…</td>
+      </tr><tr>
+        <td>4</td>
+        <td>北京</td>
+        <td>体育赛事</td>
+        <td class="date">2026/09/30</td>
+        <td class="date">2026/10/16</td>
+        <td class="num">+16</td>
+        <td>北京市人民政府办公厅印发《关于大力发展赛事经济促进体育消费…</td>
+      </tr><tr>
+        <td>5</td>
+        <td>北京</td>
+        <td>政务服务</td>
+        <td class="date">2026/09/23</td>
+        <td class="date">2026/10/13</td>
+        <td class="num">+20</td>
+        <td>北京市经济和信息化局北京市政务服务和数据管理局等部门关于深…</td>
+      </tr><tr>
+        <td>6</td>
+        <td>北京</td>
+        <td>物流</td>
+        <td class="date">2026/08/28</td>
+        <td class="date">2026/10/20</td>
+        <td class="num">+53</td>
+        <td>北京市发展和改革委员会关于印发北京市“十五五”时期现代物流…</td>
+      </tr><tr>
+        <td>7</td>
+        <td>河北</td>
+        <td>电力</td>
+        <td class="date">2026/08/03</td>
+        <td class="date">2026/10/19</td>
+        <td class="num">+77</td>
+        <td>河北省人民政府办公厅关于印发《河北省进一步优化电网投资建设…</td>
+      </tr></tbody>
+  </table>
+  <p class="source">每格均可回原始栏目核对。地方文件名称为节选，完整标题与链接见线上对应页面。</p>
+  <table>
+    <caption><b>表 4　地方先行明细</b>（地方同类文件早于中央锚点，共 8 组，提前天数为绝对值）</caption>
+    <colgroup><col style="width:4%"/><col style="width:9%"/><col style="width:14%"/><col style="width:13%"/><col style="width:13%"/><col style="width:9%"/><col style="width:38%"/></colgroup>
+    <thead><tr><th>#</th><th>单元</th><th>领域</th><th>地方发文</th><th>中央发文</th><th class="num">提前</th><th>地方文件（节选）</th></tr></thead>
+    <tbody><tr>
+        <td>1</td>
+        <td>上海</td>
+        <td>政务服务</td>
+        <td class="date">2026/05/15</td>
+        <td class="date">2026/09/23</td>
+        <td class="num">131</td>
+        <td>上海市人民政府办公厅关于印发《上海市深化“一网通办”改…</td>
+      </tr><tr>
+        <td>2</td>
+        <td>上海</td>
+        <td>普惠养老</td>
+        <td class="date">2026/08/05</td>
+        <td class="date">2026/10/16</td>
+        <td class="num">72</td>
+        <td>普陀区民政局关于印发《普陀区老龄事业发展“十五五”规划…</td>
+      </tr><tr>
+        <td>3</td>
+        <td>上海</td>
+        <td>体育赛事</td>
+        <td class="date">2026/07/30</td>
+        <td class="date">2026/09/30</td>
+        <td class="num">62</td>
+        <td>上海市人民政府办公厅关于印发《上海市促进赛事经济高质量…</td>
+      </tr><tr>
+        <td>4</td>
+        <td>北京</td>
+        <td>新质生产力</td>
+        <td class="date">2026/08/17</td>
+        <td class="date">2026/10/09</td>
+        <td class="num">53</td>
+        <td>北京经济技术开发区营商环境建设工作领导小组关于印发《北…</td>
+      </tr><tr>
+        <td>5</td>
+        <td>上海</td>
+        <td>新质生产力</td>
+        <td class="date">2026/08/26</td>
+        <td class="date">2026/10/09</td>
+        <td class="num">44</td>
+        <td>上海市人民政府办公厅关于印发《上海市战略性新兴产业发展…</td>
+      </tr><tr>
+        <td>6</td>
+        <td>北京</td>
+        <td>房车消费</td>
+        <td class="date">2026/08/14</td>
+        <td class="date">2026/09/18</td>
+        <td class="num">35</td>
+        <td>北京市通州区文化和旅游局等十四部门关于印发《北京市通州…</td>
+      </tr><tr>
+        <td>7</td>
+        <td>北京</td>
+        <td>房地产</td>
+        <td class="date">2026/08/07</td>
+        <td class="date">2026/08/28</td>
+        <td class="num">21</td>
+        <td>北京市住房和城乡建设委员会等部门关于进一步优化调整本市…</td>
+      </tr><tr>
+        <td>8</td>
+        <td>上海</td>
+        <td>物流</td>
+        <td class="date">2026/08/18</td>
+        <td class="date">2026/08/28</td>
+        <td class="num">10</td>
+        <td>上海市人民政府办公厅关于印发《上海市现代物流发展“十五…</td>
+      </tr></tbody>
+  </table>
+  <p class="source">"先行"只表示时间上更早，不表示因果方向；地方试点先于中央统一部署是常见现象。个别先行组间隔超过 3 个月，通常是地方在该领域的常态化部署，与中央锚点未必针对同一议题，仅作并列参考。</p>
+
+  <h2><span class="num">八</span>风险提示与局限</h2>
+  <ul>
+    <li><b>主题级配对，非文件级配对。</b>中央与地方文件之间没有官方对应编号，只能按领域关键词匹配，存在错配与漏配。</li>
+    <li><b>只覆盖"出文"这一种落实形式。</b>会议部署、指标分解、资金下达等不出文的落实，本方法完全看不到。</li>
+    <li><b>样本不足以支撑统计推断。</b>7 组观测只能描述现象，不能估计分布、不能做组间检验。</li>
+    <li><b>数据为静态快照。</b>本报告基于 2026/11/07 的采集结果；地方栏目持续更新，重新采集后数字会变。</li>
+    <li><b>未使用统计年鉴校准。</b>地方文件数量受栏目设置影响，不宜直接当作治理强度指标。</li>
+  </ul>
+
+  <h2><span class="num">附</span>口径定义与生成信息</h2>
+  <table>
+    <caption><b>表 5　关键口径</b></caption>
+    <colgroup><col style="width:20%"/><col style="width:80%"/></colgroup>
+    <thead><tr><th>术语</th><th>定义</th></tr></thead>
+    <tbody>
+      <tr><td>确认跟进</td><td>地方文件标题命中领域关键词，且发布日期晚于中央锚点发文日，且属于政策文件</td></tr>
+      <tr><td>地方先行</td><td>同类地方文件早于中央锚点发文日，时滞记为负</td></tr>
+      <tr><td>疑似承接</td><td>标题未命中，但正文中同一主题多次出现且晚于中央发文；单列，不计入时滞</td></tr>
+      <tr><td>超出观测窗</td><td>中央发文日落在该单元栏目可回溯范围之外，无法判断</td></tr>
+      <tr><td>可判配对</td><td>排除不可用单元与超出观测窗后的组合数，本期 107 组</td></tr>
+      <tr><td>中位时滞</td><td>7 组时滞的中位数，避免均值被长尾拉动</td></tr>
+    </tbody>
+  </table>
+  <div class="foot">
+    本报告由宏策智研（政策证据工作台）于 2026年11月9日 23:40 自动生成，数据快照 2026/11/07。<br/>
+    所有结论均可回溯到原始栏目，但推断部分（尤其是差异解释）不构成政策效果估计或决策建议。引用时请同时引用样本量与口径说明。<br/>
+    报告版本 v1.0 · 生成方式：前端报告引擎（内联样式与矢量图，无外部依赖，可离线打开与打印）
+  </div>
+</div>
+</body>
+</html>
