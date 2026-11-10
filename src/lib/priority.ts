@@ -315,7 +315,7 @@ export function rankPolicies(policies: Policy[], options: RankOptions = {}): Pri
 
   const notes: string[] = [];
   if (scoped.length === 0) {
-    notes.push(`近 ${windowDays} 天内没有可用的政策原件，已退回到全量语料排序。`);
+    notes.push(`近 ${windowDays} 天内无可用政策原件，已改按全部语料排序。`);
   }
   if (!options.includeBackground) {
     const excluded = policies.filter((policy) => {
@@ -324,7 +324,7 @@ export function rankPolicies(policies: Policy[], options: RankOptions = {}): Pri
     }).length;
     if (excluded > 0) notes.push(`另有 ${excluded} 项发布实录／数据发布／工作动态未参与排序，可在政策库中查看。`);
   }
-  notes.push('优先级只回答"先看哪条"，不回答"效果有多大"；效果判断必须回到机制链与省级推演。');
+  notes.push('评分用于确定阅读顺序，不反映政策效果大小。效果判断应结合传导链与省级影响测算。');
 
   return {
     ranked: assessed.slice(0, limit),

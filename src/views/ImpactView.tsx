@@ -46,16 +46,16 @@ export function ImpactView({
     <div className="inner-page impact-page">
       <header className="page-heading">
         <div className="eyebrow">
-          <span className="eyebrow-index">04</span>
+          <span className="eyebrow-index">03</span>
           PROVINCIAL IMPACT
-          <span className="eyebrow-tag">{selectedPolicies.length} 项政策参与推演</span>
+          <span className="eyebrow-tag">{selectedPolicies.length} 项政策参与测算</span>
         </div>
         <div className="page-heading-row">
           <div>
             <h1>省级影响评估</h1>
             <p>
-              把政策文本拆成传导渠道，再与各省经济结构匹配，输出「谁受影响更大、主要来自哪条渠道」。
-              这是结构推演，不是政策效果的计量估计。
+              将政策文本分解为传导渠道，与各省经济结构匹配，测算受影响程度及主要渠道。
+              本页为结构测算结果，非政策效果的计量估计。
             </p>
           </div>
           <div className="library-summary">
@@ -69,7 +69,7 @@ export function ImpactView({
             </div>
             <div>
               <strong>{impact.provinces[0]?.short ?? '—'}</strong>
-              <span>最高暴露</span>
+              <span>影响最强</span>
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export function ImpactView({
       <section className="panel impact-scope">
         <button className="scope-toggle" onClick={() => setOpen((value) => !value)}>
           <SlidersHorizontal size={15} />
-          选择参与推演的政策
+          选择参与测算的政策
           <span className="scope-count">{selectedPolicies.length} / {documents.length}</span>
           <ChevronDown size={15} className={open ? 'is-open' : ''} />
         </button>
@@ -121,12 +121,12 @@ export function ImpactView({
             </div>
             {documents.length === 0 && (
               <p className="scope-empty">
-                尚未加载政策文件。<button className="link-button" onClick={onGoLibrary}>去政策库看看</button>
+                尚未加载政策文件。<button className="link-button" onClick={onGoLibrary}>打开政策库</button>
               </p>
             )}
             {policies.length > documents.length && (
               <p className="scope-note">
-                发布会实录、数据发布与工作动态共 {policies.length - documents.length} 项不作为政策工具参与推演。
+                发布会实录、数据发布与工作动态共 {policies.length - documents.length} 项不纳入测算范围。
               </p>
             )}
           </div>
@@ -136,8 +136,8 @@ export function ImpactView({
       {selectedPolicies.length === 0 ? (
         <section className="panel empty-state">
           <MapPin size={26} />
-          <h2>还没有选择政策</h2>
-          <p>展开上方「选择参与推演的政策」，或先到政策库采集最新中央政策。</p>
+          <h2>尚未选择政策</h2>
+          <p>请展开上方「选择参与测算的政策」，或在政策库中采集最新中央政策。</p>
           <button className="primary-button" onClick={onGoLibrary}>
             打开政策库
             <ArrowRight size={15} />
@@ -153,14 +153,12 @@ export function ImpactView({
               </div>
               <ChinaMap provinces={impact.provinces} selected={activeCode} onSelect={setActiveCode} />
               <p className="map-disclaimer">
-                本图为政策影响分析示意图，行政边界来源于公开省级矢量数据（含台湾省、香港特别行政区、澳门特别行政区与南海诸岛），
-                仅供参考，不作为国界与行政区划的权威依据。港澳台不参与本模型打分。
+                本图为影响分析示意图，行政边界采用公开省级矢量数据（含台湾省、香港特别行政区、澳门特别行政区与南海诸岛），
+                不作为国界与行政区划的权威依据；港澳台不纳入测算。
               </p>
               <p className="map-scope">
-                <strong>这一页是结构推算，不是观测值。</strong>分数由"政策渠道权重 × 各省经济结构"算出，
-                不依赖任何地方发文，所以全国 31 个省级单位都有值、都可排序。
-                它与「央地传导」页的时滞观测是两套口径：那边只在能抓到政策文件的 6 个地方单元有数据，抓不到的不补造。
-                两者不能互相验证——这里分数高不代表那边响应快，那边没有数据也不代表这里算错。
+                本页为结构测算，覆盖 31 个省级单位。分值由政策渠道权重与各省经济结构计算，不依赖地方发文数据。
+                与「央地传导」页的时滞观测属不同口径，两者不宜互相验证。
               </p>
             </div>
 
@@ -174,7 +172,7 @@ export function ImpactView({
                     </div>
                     <div className="province-score">
                       <strong>{active.exposure.toFixed(1)}</strong>
-                      <span>暴露度</span>
+                      <span>影响强度</span>
                     </div>
                   </div>
                   <p className="province-note">{active.note}</p>
@@ -276,8 +274,8 @@ export function ImpactView({
 
           <section className="panel rank-panel">
             <div className="panel-heading">
-              <h2>省级暴露度排名</h2>
-              <span className="panel-subtitle">前 5 省合计占全部暴露度的 {impact.national.concentration}%</span>
+              <h2>省级影响强度排名</h2>
+              <span className="panel-subtitle">前 5 位省级单位合计占全部影响强度的 {impact.national.concentration}%</span>
             </div>
             <div className="table-scroll">
               <table className="data-table">
@@ -285,7 +283,7 @@ export function ImpactView({
                   <tr>
                     <th>#</th>
                     <th>省级行政区</th>
-                    <th>暴露度</th>
+                    <th>影响强度</th>
                     <th>受益侧</th>
                     <th>承压侧</th>
                     <th>主要渠道</th>
@@ -327,8 +325,7 @@ export function ImpactView({
 
           <section className="panel caveat-panel">
             <div className="panel-heading">
-              <h2>方法与边界</h2>
-              <span className="panel-subtitle">这组数字能说明什么、不能说明什么</span>
+              <h2>数据说明</h2>
             </div>
             <ol>
               {impact.caveats.map((caveat) => (

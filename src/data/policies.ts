@@ -1,7 +1,8 @@
 import type { IndicatorSeries, Policy } from '../types';
+import { tidyBodyText, tidySummary } from '../lib/text';
 
 export const CORPUS_META = {
-  version: 'MVP 0.1',
+  version: '2026.11',
   snapshot: '2026-10-26',
   range: '2024.09 — 2025.08',
   policyCount: 8,
@@ -376,6 +377,18 @@ for (const policy of policies) {
   if (!policy.origin) policy.origin = 'seed';
 }
 
+/** 采集语料统一清理排版残留，原文语义不作改动 */
+function cleanText(policy: Policy): Policy {
+  return {
+    ...policy,
+    summary: tidySummary(policy.summary, policy.title),
+    excerpt: tidyBodyText(policy.excerpt ?? ''),
+    paragraphs: policy.paragraphs?.map((item) => tidyBodyText(item)),
+    fullText: policy.fullText ? tidyBodyText(policy.fullText) : policy.fullText,
+    clauses: policy.clauses?.map((clause) => ({ ...clause, text: tidyBodyText(clause.text) })),
+  };
+}
+
 export function applyAutoPolicies(incoming: Policy[]): number {
   const known = new Set(policies.map((policy) => normalizeUrl(policy.sourceUrl)));
   let added = 0;
@@ -383,7 +396,7 @@ export function applyAutoPolicies(incoming: Policy[]): number {
     const key = normalizeUrl(item.sourceUrl);
     if (!key || known.has(key)) continue;
     known.add(key);
-    policies.push({ ...item, origin: 'auto' });
+    policies.push({ ...cleanText(item), origin: 'auto' });
     added += 1;
   }
   if (added > 0) {

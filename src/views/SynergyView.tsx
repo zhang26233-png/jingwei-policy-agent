@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { ArrowUpRight, Download, Info } from 'lucide-react';
 import type { Policy } from '../types';
 import { QUADRANT_META, buildSynergy, type Quadrant } from '../lib/synergy';
-import { polarityEvidence } from '../lib/province';
 import { buildSynergyReport, downloadText } from '../lib/report';
 import './synergy.css';
 
@@ -23,75 +22,13 @@ export function SynergyView({ policies, onOpenPolicy }: SynergyViewProps) {
   const channels = result.channels;
   const selected = channels.find((channel) => channel.id === selectedId) ?? channels[0] ?? null;
 
-  // 抽检样本按渠道分层：只抽头条会把大渠道占满，看不出各渠道的判定质量
-  const policyById = useMemo(() => new Map(policies.map((item) => [item.id, item])), [policies]);
-  const sample = useMemo(() => {
-    const rows: {
-      id: string;
-      short: string;
-      date: string;
-      issuer: string;
-      channel: string;
-      polarity: number;
-      up: string[];
-      down: string[];
-    }[] = [];
-    const queues = channels.map((channel) => ({ channel: channel.short, members: channel.coherence.members }));
-    const seen = new Set<string>();
-    for (let round = 0; rows.length < 30; round += 1) {
-      let added = false;
-      for (const queue of queues) {
-        const member = queue.members[round];
-        if (!member || seen.has(member.id)) continue;
-        const policy = policyById.get(member.id);
-        if (!policy) continue;
-        const evidence = polarityEvidence(policy);
-        seen.add(member.id);
-        rows.push({
-          id: member.id,
-          short: member.title,
-          date: member.date,
-          issuer: member.issuer,
-          channel: queue.channel,
-          polarity: evidence.polarity,
-          up: evidence.up,
-          down: evidence.down,
-        });
-        added = true;
-        if (rows.length >= 30) break;
-      }
-      if (!added) break;
-    }
-    return rows;
-  }, [channels, policyById]);
-
-  const exportSample = () => {
-    const head = ['政策ID', '标题', '发文机关', '发布日期', '所属渠道', '系统判定方向', '扩张词', '收紧词', '人工判定', '备注'];
-    const body = sample.map((row) => [
-      row.id,
-      row.short,
-      row.issuer,
-      row.date,
-      row.channel,
-      row.polarity === 1 ? '扩张' : row.polarity === -1 ? '收紧' : '未定',
-      row.up.join(' '),
-      row.down.join(' '),
-      '',
-      '',
-    ]);
-    const csv = [head, ...body]
-      .map((cols) => cols.map((col) => `"${String(col).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
-    downloadText(`宏策智研_编码抽检_${new Date().toISOString().slice(0, 10)}.csv`, `\ufeff${csv}`, 'text/csv;charset=utf-8');
-  };
-
   if (channels.length === 0) {
     return (
       <section className="syn-page">
         <header className="syn-head">
           <span className="syn-kicker">POLICY SYNERGY</span>
-          <h1>政策协同：一致性与可执行性</h1>
-          <p>当前语料里没有可用的政策文件，先采集再回来看。</p>
+          <h1>政策协同：取向一致性与可执行性</h1>
+          <p>当前语料中没有可纳入测算的政策文件，请先完成采集。</p>
         </header>
       </section>
     );
@@ -129,11 +66,12 @@ export function SynergyView({ policies, onOpenPolicy }: SynergyViewProps) {
     <section className="syn-page">
       <header className="syn-head">
         <div>
-          <span className="syn-kicker">POLICY SYNERGY · 协同测度</span>
+          <span className="syn-kicker">POLICY SYNERGY · 政策协同</span>
           <h1>政策协同：取向一致性与可执行性</h1>
           <p>
-            把"政策之间合不合拍"拆成两个可复算的指数：横轴衡量同一渠道上的政策是否朝一个方向使劲，
-            纵轴衡量这些政策写没写清目标、责任、资金、时限和考核安排。九条渠道落在哪个象限，比任何单项得分更有解释力。
+            政策取向的一致程度与执行条件的完备程度分别量化为两个指数：横轴为政策一致性指数（PCI），
+            衡量同一渠道内各项政策的取向是否一致；纵轴为政策可执行性指数（PEI），
+            衡量政策对目标、责任、资金、时限与考核安排的明确程度。九条渠道所在的象限，可用于判断协同状况。
           </p>
         </div>
         <div className="syn-hero">
@@ -151,7 +89,7 @@ export function SynergyView({ policies, onOpenPolicy }: SynergyViewProps) {
             type="button"
             className="syn-export"
             onClick={() =>
-              downloadText(`宏策智研_协同测度_${new Date().toISOString().slice(0, 10)}.md`, buildSynergyReport(result))
+              downloadText(`经纬纵横_政策协同_${new Date().toISOString().slice(0, 10)}.md`, buildSynergyReport(result))
             }
           >
             <Download size={13} />
@@ -265,22 +203,22 @@ export function SynergyView({ policies, onOpenPolicy }: SynergyViewProps) {
           </ul>
           <p className="syn-legend-foot">图例数值为「一致性 PCI / 可执行性 PEI」。</p>
           <div className="syn-read-guide">
-            <h3>怎么看这张图</h3>
+            <h3>象限说明</h3>
             <ul>
               <li>
-                <b>右上</b>方向一致、条件相对最齐——本期 {quadrantCount.synergy} 条渠道落在这里。
+                <b>右上</b>取向一致、执行条件较为完备，本期 {quadrantCount.synergy} 条渠道。
               </li>
               <li>
-                <b>右下</b>方向一致但缺条件，本期 {quadrantCount.idle} 条——政策口径统一，目标刻度、资金或考核跟不上。
+                <b>右下</b>取向一致但执行条件不足，本期 {quadrantCount.idle} 条，表现为目标值、资金或考核安排不明确。
               </li>
               <li>
-                <b>左上</b>单个文件写得实，但渠内方向互相抵消，本期 {quadrantCount.single} 条。
+                <b>左上</b>单个文件表述具体，但渠道内取向相互抵消，本期 {quadrantCount.single} 条。
               </li>
               <li>
-                <b>左下</b>方向散、条件也虚，本期 {quadrantCount.conflict} 条，是最需要往下拆解的一类。
+                <b>左下</b>取向分散且执行条件不足，本期 {quadrantCount.conflict} 条。
               </li>
             </ul>
-            <p>分界线取本期九条渠道的中位数（一致性 {result.split.pci} 分、可执行性 {result.split.pei} 分），是相对位置，不是合格线。</p>
+            <p>分界线为九条渠道的中位数（一致性 {result.split.pci} 分、可执行性 {result.split.pei} 分），表示相对位置，不设合格标准。</p>
           </div>
         </div>
 
@@ -359,7 +297,7 @@ export function SynergyView({ policies, onOpenPolicy }: SynergyViewProps) {
                     </li>
                     <li className="is-hint">
                       <span>
-                        两条方向并列，但系统只判方向、不判对象是否相同；是否构成实质冲突需回原文比对。本渠道净效应见下方分项。
+                        两条方向并列。系统仅判定政策方向，不判定作用对象是否相同；是否构成实质冲突，需回原文比对。
                       </span>
                     </li>
                   </ul>
@@ -393,7 +331,7 @@ export function SynergyView({ policies, onOpenPolicy }: SynergyViewProps) {
       <div className="syn-table-card">
         <div className="syn-card-head">
           <h2>九渠道对账表</h2>
-          <span>同一份数据，逐项列出，便于复核</span>
+          <span>逐项列出各渠道分项得分，便于复核</span>
         </div>
         <table className="syn-table">
           <thead>
@@ -438,76 +376,16 @@ export function SynergyView({ policies, onOpenPolicy }: SynergyViewProps) {
         </table>
       </div>
 
-      <div className="syn-sample">
-        <div className="syn-card-head">
-          <h2>方向编码抽检</h2>
-          <span>按渠道分层抽 30 条，供人工复核</span>
-        </div>
-        <p className="syn-sample-note">
-          下表每一行都给出系统判定的方向与命中的关键词。请只判断"系统判得对不对"，不必评估政策本身。
-          复核完把一致性比例填进论文的信度一节——没有这个数字，"方向由 AI 判定"就是不可信的。
-        </p>
-        <div className="syn-sample-scroll">
-          <table className="syn-sample-table">
-            <thead>
-              <tr>
-                <th>政策</th>
-                <th>渠道</th>
-                <th>系统判定</th>
-                <th>命中词</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sample.map((row) => (
-                <tr key={row.id}>
-                  <td>
-                    <button type="button" onClick={() => onOpenPolicy(row.id)}>
-                      {row.short}
-                    </button>
-                  </td>
-                  <td>{row.channel}</td>
-                  <td className={row.polarity === 1 ? 'is-up' : row.polarity === -1 ? 'is-down' : ''}>
-                    {row.polarity === 1 ? '扩张' : row.polarity === -1 ? '收紧' : '未定'}
-                  </td>
-                  <td>
-                    <div className="syn-sample-words">
-                      {row.up.slice(0, 3).map((word) => (
-                        <i key={word} className="is-up">
-                          {word}
-                        </i>
-                      ))}
-                      {row.down.slice(0, 3).map((word) => (
-                        <i key={word} className="is-down">
-                          {word}
-                        </i>
-                      ))}
-                      {row.up.length === 0 && row.down.length === 0 && <span>无方向词</span>}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="syn-sample-foot">
-          <p>共 {sample.length} 条。导出后新增两列填写人工判定与备注，即可算出编码一致率。</p>
-          <button type="button" onClick={exportSample}>
-            <Download size={13} />
-            导出标注表 CSV
-          </button>
-        </div>
-      </div>
-
       <div className="syn-method">
         <div className="syn-card-head">
           <h2>
-            <Info size={13} /> 口径与边界
+            <Info size={13} /> 测算说明
           </h2>
-          <span>换一条线会改变归属，所以口径要写出来</span>
+
         </div>
         <div className="syn-method-cols">
           <div>
-            <h3>指数怎么算</h3>
+            <h3>指数构成</h3>
             <ul>
               {result.method.map((item) => (
                 <li key={item.id}>
@@ -518,7 +396,7 @@ export function SynergyView({ policies, onOpenPolicy }: SynergyViewProps) {
             </ul>
           </div>
           <div>
-            <h3>这套东西测不到什么</h3>
+            <h3>适用范围</h3>
             <ul>
               {result.caveats.map((caveat) => (
                 <li key={caveat}>

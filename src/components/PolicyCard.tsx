@@ -29,7 +29,7 @@ export function PolicyCard({ policy, index, onOpen, onCompare, inCompare }: Poli
         </div>
       </div>
 
-      <p className="policy-summary">{policy.summary}</p>
+      {policy.summary && policy.summary !== policy.title && <p className="policy-summary">{policy.summary}</p>}
 
       <div className="policy-tags">
         {policy.instruments.slice(0, 3).map((instrument) => (

@@ -1,11 +1,10 @@
-// 宏策智研后端：政策采集 API + 静态资源托管（生产模式单端口即可演示）。
+// 经纬纵横后端：政策采集 API + 静态资源托管（生产模式单端口即可演示）。
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SOURCES, fetchLists, fetchArticles } from './sources.mjs';
 import { extractPolicy } from './extract.mjs';
-import { buildAudit } from './audit.mjs';
 import { readAttachments } from './pdf.mjs';
 import { fetchHtml, extractArticle, mapLimit } from './net.mjs';
 import { load, save, getPolicies, upsertPolicies, recordRun, summary } from './store.mjs';
@@ -309,10 +308,6 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
-  if (url.pathname === '/api/audit' && req.method === 'GET') {
-    return json(res, 200, buildAudit(getPolicies()));
-  }
-
   // 地方政策语料：由 scripts/collect-locals.mjs 落盘，读不到就如实返回空，
   // 前端据此显示"尚未抓取"，而不是编一份看起来有数据的矩阵。
   if (url.pathname === '/api/locals' && req.method === 'GET') {
@@ -383,6 +378,6 @@ process.on('uncaughtException', (error) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`宏策智研服务已启动：http://${HOST}:${PORT}`);
+  console.log(`经纬纵横服务已启动：http://${HOST}:${PORT}`);
   console.log(`语料：${getPolicies().length} 项；采集源：${SOURCES.length} 个`);
 });

@@ -223,7 +223,7 @@ const barTone = (lag: number) => (lag <= 30 ? C.green : lag <= 60 ? C.amber : C.
 const STATUS_TONE: Record<string, { fill: string; label: string }> = {
   respond: { fill: C.green, label: '确认跟进' },
   pre: { fill: C.amber, label: '地方先行' },
-  likely: { fill: '#d8c39a', label: '疑似承接' },
+  likely: { fill: '#d8c39a', label: '相关文件' },
   none: { fill: '#e7ebed', label: '未见' },
   outside: { fill: '#f5f2ea', label: '超出观测窗' },
 };
@@ -713,97 +713,98 @@ export function renderReportHtml(model: ReportModel, result: TransferResult): st
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>中央发文之后：地方跟进的时滞与可见度 · 宏策智研</title>
+<title>中央政策发布后的地方跟进：时滞特征与观测范围 · 经纬纵横</title>
 <style>${css}</style>
 </head>
 <body>
 <div class="sheet">
   <div class="kicker">
-    <b>宏策智研 · 政策证据工作台</b>
-    <span>政策传导观察 · 第 01 期</span>
+    <b>经纬纵横 · 宏观政策研究平台</b>
+    <span>央地政策传导观察 · 第 01 期</span>
   </div>
 
-  <h1>中央发文之后：地方跟进的时滞与可见度</h1>
-  <p class="subtitle">基于 ${units.length} 个地方单元、${themes.total} 个政策领域、${counts.observable} 组可判配对的实测观察</p>
+  <h1>中央政策发布后的地方跟进：时滞特征与观测范围</h1>
+  <p class="subtitle">基于 ${units.length} 个地方单元、${themes.total} 个政策领域、${counts.observable} 组有效样本的实测观察</p>
 
   <div class="meta">
     <span><b>报告日期</b>　${stamp} ${clock}</span>
     <span><b>数据快照</b>　${model.dataAt ? fmtDate(model.dataAt.slice(0, 10)) : '—'}</span>
     <span><b>中央语料</b>　${corpus.count} 份（${fmtDate(corpus.from)} 至 ${fmtDate(corpus.to)}）</span>
-    <span><b>地方语料</b>　${coverage.crawled} 个单元接通 / ${coverage.usable} 个可用</span>
+    <span><b>地方语料</b>　${coverage.crawled} 个单元接通，${coverage.usable} 个可用</span>
   </div>
 
   <h2><span class="num">摘要</span>核心结论</h2>
   <div class="lead">
     <ol>
-      <li><b>${counts.respond} 组可确认的跟进，中位时滞 ${lagMedian} 天。</b>在 ${counts.observable} 组可判配对中，能确认"中央发文后地方出台同领域文件"的只有 ${counts.respond} 组（${respondShare}%）。典型情况下，地方在中央发文后约两周半内出文。</li>
-      <li><b>差异不在"有没有"，而在"快与慢相差 ${ratio} 倍"。</b>最快 ${fastest ? `+${fastest.lag} 天（${fastest.province}·${fastest.theme}）` : '—'}，最慢 ${slowest ? `+${slowest.lag} 天（${slowest.province}·${slowest.theme}）` : '—'}；${lag.bands.fast} 组落在 30 天内，${lag.bands.mid} 组在 31—60 天，${lag.bands.slow} 组超过 60 天。</li>
-      <li><b>跨地区比较，首先比的是"看得见多少"。</b>${peekUnit ? `${peekUnit.short}观察到 ${peekUnit.respond} 组跟进，其栏目近 90 天公开 ${peekUnit.recent90} 份文件` : ''}；其余单元近 90 天公开量都在 10 份上下，各自只观察到 0—2 组。观察密度与时滞呈同向变化，不能读成行政效率差异。</li>
-      <li><b>"全国层面的差异"目前没有统计基础。</b>${coverage.target} 个省级单位中只有 ${coverage.crawled} 个接通栏目、${coverage.usable} 个满足更新门槛。本报告给出的是样本内差异，不是全国分布。</li>
-      <li><b>${themes.total} 个领域中有 ${themes.covered} 个出现了地方同类文件，其中 ${themes.responded} 个有确认跟进。</b>其余 ${themes.total - themes.covered} 个领域在可判配对里零命中，这更可能是"落实不走省级门户的政策文件栏目"，而不是"没有落实"。</li>
+      <li><b>${counts.observable} 组有效样本中，确认跟进 ${counts.respond} 组，中位时滞 ${lagMedian} 天。</b>确认跟进占有效样本的 ${respondShare}%。按中位数判断，地方在中央发文后约半个月出台同领域文件。</li>
+      <li><b>组间差距 ${ratio} 倍，差异主要来自尾部。</b>最快 ${fastest ? `+${fastest.lag} 天（${fastest.province}·${fastest.theme}）` : '—'}，最慢 ${slowest ? `+${slowest.lag} 天（${slowest.province}·${slowest.theme}）` : '—'}。30 天以内 ${lag.bands.fast} 组，31 至 60 天 ${lag.bands.mid} 组，60 天以上 ${lag.bands.slow} 组。</li>
+      <li><b>跨单元比较首先反映文件公开密度。</b>${peekUnit ? `${peekUnit.short}观察到 ${peekUnit.respond} 组跟进，该单元栏目近 90 天公开文件 ${peekUnit.recent90} 份` : ''}，其余单元同期公开量多在 10 份上下，各自观察到 0 至 2 组。观察到的组数与时滞同时受栏目收录范围影响，不宜直接解读为行政效率差异。</li>
+      <li><b>全国分布不具备推断条件。</b>${coverage.target} 个省级单位中，${coverage.crawled} 个接通栏目，${coverage.usable} 个满足更新门槛。本报告给出上述单元之间的差异，不作全国分布推断。</li>
+      <li><b>${themes.total} 个政策领域中，${themes.covered} 个出现地方同类文件，其中 ${themes.responded} 个有确认跟进。</b>其余 ${themes.total - themes.covered} 个领域在有效样本中未见匹配。相关政策事项通常由部门文件或非公开文本部署，未必经由省级门户的政策文件栏目发布。</li>
     </ol>
   </div>
 
-  <h2><span class="num">一</span>研究问题与回答框架</h2>
-  <p>本报告回答一个具体问题：中央出台政策之后，地方是否出台对应文件、隔了多久，这个间隔在不同地区之间是否存在差异。这个问题需要拆成两半，因为可回答的程度完全不同。</p>
+  <h2><span class="num">一</span>研究问题与观察指标</h2>
+  <p>本报告考察中央政策文件发布之后，地方是否出台对应文件、间隔多久，以及该间隔在不同地方单元之间的差异。观察指标与不在范围内的内容分列如下。</p>
   <div class="two-col">
     <div class="card ok">
-      <h4>能回答</h4>
+      <h4>观察指标</h4>
       <ul>
-        <li>在已接通的地方栏目里，某主题是否出现了晚于中央发文的地方文件；</li>
-        <li>如果出现，两者相隔多少天，中位数与区间是多少；</li>
-        <li>不同地方单元之间，观察到的组数与间隔如何分布；</li>
-        <li>哪些主题出现了"地方先于中央"的同类文件。</li>
+        <li>已接通栏目中，某政策领域是否出现晚于中央发文的地方文件；</li>
+        <li>出现时，两者相隔天数，以及中位数与区间；</li>
+        <li>不同地方单元之间，跟进组数与间隔的分布；</li>
+        <li>出现地方先行文件的政策领域。</li>
       </ul>
     </div>
     <div class="card no">
-      <h4>不能回答</h4>
+      <h4>不在本报告范围</h4>
       <ul>
-        <li>全国 ${coverage.target} 个省级单位的时滞分布——只接通 ${coverage.crawled} 个；</li>
-        <li>地方"是否落实"——只看到有没有出文，看不到执行；</li>
-        <li>哪些因素导致时滞差异——样本量不支持归因；</li>
-        <li>政策效果——本报告不涉及效果评估。</li>
+        <li>${coverage.target} 个省级单位的时滞分布，本报告覆盖 ${coverage.crawled} 个栏目；</li>
+        <li>地方政策的执行情况，本报告仅统计文件发布；</li>
+        <li>时滞差异的成因，现有样本不支持归因分析；</li>
+        <li>政策效果评估，本报告不涉及。</li>
       </ul>
     </div>
   </div>
 
   <h2><span class="num">二</span>数据与方法</h2>
-  <p><b>中央语料。</b>来自国务院、财政部、国家发展改革委、人民银行、统计局等官方栏目，本期共 ${corpus.count} 份政策文件，日期区间 ${fmtDate(corpus.from)} 至 ${fmtDate(corpus.to)}。据此设定 ${themes.total} 个政策领域的"中央锚点"：每个领域对应一份具体的中央文件及其发文日。</p>
-  <p><b>地方语料。</b>覆盖目标为 ${coverage.target} 个省级单位；本轮对其中 ${coverage.crawled} 个门户做栏目抓取并全部解析成功，其中 ${coverage.usable} 个满足可用性门槛。其余单位未纳入本轮采集——此前逐省探测显示，多数门户存在拒访、列表由脚本渲染或栏目长期停更，无法稳定取到政策文件列表。</p>门槛不是"历史存量够多"，而是"近 90 天至少 ${6} 份政策类文件、且栏目更新晚于 2026-10-20"——一个三年攒了几十条、近三个月一条没发的栏目，用它判断"是否跟进"只会产出假阴性。</p>
-  <p><b>判定规则。</b>某格判为"确认跟进"需同时满足三条：地方文件标题命中该领域关键词；发布日期晚于中央发文日；文件属于政策文件而非事务性通知。第三条是必需的——早前的版本曾把"人工智能领域颠覆性技术方向储备课题征集""资质培训班通知"算成 +0 天响应，把时滞压到失真。</p>
-  <p><b>观测窗。</b>各单元栏目可回溯的时间范围不同。当中央发文日落在某单元的栏目窗口之外时，该格标为"超出观测窗"而不判"未见"——拿栏目边界当作政策事实，是最容易犯也最难发现的错误。</p>
-  <p><b>样本漏斗。</b>${coverage.target} 个省级单位 × ${themes.total} 个领域 = ${counts.total} 组名义配对；扣除 ${counts.uncovered} 组不可用单元、${counts.outside} 组超出观测窗，得到 ${counts.observable} 组可判配对。</p>
+  <p><b>中央语料。</b>取自国务院、财政部、国家发展改革委、中国人民银行、国家统计局等官方栏目，本期共 ${corpus.count} 份政策文件，日期区间为 ${fmtDate(corpus.from)} 至 ${fmtDate(corpus.to)}。据此设定 ${themes.total} 个政策领域的中央锚点，每个领域对应一份中央文件及其发文日期。</p>
+  <p><b>地方语料。</b>覆盖目标为 ${coverage.target} 个省级单位。本轮对其中 ${coverage.crawled} 个门户的栏目执行抓取并全部解析成功，${coverage.usable} 个满足可用性门槛。其余单元未纳入本轮采集，原因包括门户拒绝访问、列表由脚本渲染、栏目长期停更。</p>
+  <p><b>准入门槛。</b>近 90 天发布政策类文件不少于 6 份，且栏目更新日期晚于 2026 年 10 月 20 日。历史存量不作为准入依据：三年累计数十条、近三个月无更新的栏目，无法用于判断是否跟进。</p>
+  <p><b>判定规则。</b>某组合判为"确认跟进"须同时满足三项条件：地方文件标题命中该领域关键词；发布日期晚于中央发文日期；文件属政策文件，而非事务性通知。第三项为必要条件，早期版本曾将课题征集、培训班通知计入，导致时滞明显偏短。</p>
+  <p><b>观测窗。</b>各单元栏目可回溯的时间范围不同。中央发文日期落在某单元栏目窗口之外时，该组合标注为"超出观测窗"，不作"未见"处理。</p>
+  <p><b>样本构成。</b>${coverage.target} 个省级单位与 ${themes.total} 个政策领域构成 ${counts.total} 组名义组合，扣除 ${counts.uncovered} 组不可用单元、${counts.outside} 组超出观测窗，得到 ${counts.observable} 组有效样本。</p>
 
-  <h2><span class="num">三</span>发现一：典型时滞约两周，尾部拖到两个半月</h2>
-  <p>把 ${counts.respond} 组确认跟进按天数排序，形状很不对称：${lag.bands.fast} 组挤在 30 天内，中间只有 ${lag.bands.mid} 组，末端有 ${lag.bands.slow} 组超过 60 天。中位数 ${lagMedian} 天，但均值会被末端拉高——这正是为什么报告用中位数描述"典型情况"。</p>
+  <h2><span class="num">三</span>时滞特征：中位 ${lagMedian} 天，尾部延伸至 ${slowest ? slowest.lag : '—'} 天</h2>
+  <p>将 ${counts.respond} 组确认跟进按天数排序，分布明显右偏：${lag.bands.fast} 组集中在 30 天以内，31 至 60 天 ${lag.bands.mid} 组，60 天以上 ${lag.bands.slow} 组。中位数为 ${lagMedian} 天；均值受尾部影响偏高，故以中位数描述典型情况。</p>
   <figure>
     ${svgLagRank(lag)}
-    <figcaption><b>图 1　央地发文时滞排行（共 ${counts.respond} 组确认跟进）。</b>条长即时滞天数，绿色为 30 天内、赭色 31—60 天、砖红 60 天以上；虚线为中位数 ${lagMedian} 天。<div class="source">数据来源：中央政策语料（${corpus.count} 份）与 ${coverage.usable} 个地方单元的政策文件栏目，截至 ${model.dataAt ? fmtDate(model.dataAt.slice(0, 10)) : '—'}。</div></figcaption>
+    <figcaption><b>图 1　地方跟进时滞排行（${counts.respond} 组确认跟进，单位：天）。</b>条形长度为时滞天数，绿色表示 30 天以内、赭色表示 31 至 60 天、砖红色表示 60 天以上；虚线为中位数 ${lagMedian} 天。<div class="source">数据来源：中央政策语料（${corpus.count} 份）与 ${coverage.usable} 个地方单元的政策文件栏目，截至 ${model.dataAt ? fmtDate(model.dataAt.slice(0, 10)) : '—'}。</div></figcaption>
   </figure>
-  <p>末端的两组值得单独看：${slowest ? `${slowest.province}·${slowest.theme} +${slowest.lag} 天` : ''}，与最快的一组相差 ${ratio} 倍。这个跨度说明"地方跟进"不是一个统一的行政节奏，同一批中央文件在不同领域、不同地区的落地速度可以差一个数量级。</p>
+  <p>尾部两组单独列出：${slowest ? `${slowest.province}·${slowest.theme} 为 +${slowest.lag} 天` : ''}，与最快一组相差 ${ratio} 倍。同一批中央文件在不同领域、不同单元的落地节奏差异较大，未见统一的跟进周期。</p>
 
-  <h2><span class="num">四</span>发现二：${counts.observable} 个格子里只有 ${counts.respond} 组能确认</h2>
-  <p>矩阵图容易被误读成"大片空白说明地方没动"。真实的读法是：一格代表"某个领域的中央文件，在某地栏目里能否找到对应的后续文件"，而绝大多数格子是"没找到标题命中的文件"——它既可能是没出文，也可能是出在了部门文件、会议纪要或不出文的执行里。</p>
+  <h2><span class="num">四</span>跟进确认比例：${counts.observable} 组有效样本中确认 ${counts.respond} 组</h2>
+  <p>响应矩阵一格对应"某政策领域的中央文件在某单元栏目中能否找到后续文件"。矩阵中多数格未匹配到标题命中的文件。这一结果既可能对应尚未发文，也可能对应文件发布在部门文件、会议部署或未形成公开文本的执行环节，需结合具体领域核查。</p>
   <figure>
     ${svgMatrix(result, units)}
-    <figcaption><b>图 2　领域 × 地方单元 的响应矩阵（${themes.total} 个领域 × ${units.length} 个单元）。</b>列顶标注该单元近 90 天公开文件数。深绿为确认跟进，赭色为地方先行，浅褐为疑似承接（正文反复提及但标题未命中），浅灰为未见。<div class="source">数据来源：同上。仅展示 ${coverage.usable} 个可用单元；不可用单元整列不画，避免用空白暗示"全国一致"。</div></figcaption>
+    <figcaption><b>图 2　政策领域与地方单元的响应矩阵（${themes.total} 个领域 × ${units.length} 个单元）。</b>列顶标注该单元近 90 天公开文件数。深绿为确认跟进，赭色为地方先行，浅褐为相关文件（正文相关、标题未命中），浅灰为未见。<div class="source">仅列示 ${coverage.usable} 个可用单元；不可用单元整列不画，以免以空白示意全国一致。</div></figcaption>
   </figure>
   <figure>
     ${svgStatusBar(counts)}
-    <figcaption><b>图 3　${counts.observable} 组可判配对的状态构成。</b>确认跟进 ${counts.respond} 组（${respondShare}%），地方先行 ${counts.pre} 组，疑似承接 ${counts.likely} 组，未见 ${counts.none} 组。<div class="source">疑似承接不计入时滞统计——正文提到不等于落实，混算会把时滞压短。</div></figcaption>
+    <figcaption><b>图 3　${counts.observable} 组有效样本的状态构成。</b>确认跟进 ${counts.respond} 组（${respondShare}%），地方先行 ${counts.pre} 组，相关文件 ${counts.likely} 组，未见 ${counts.none} 组。<div class="source">相关文件不计入时滞统计。正文提及与文件发布属不同情形，合并计算将使时滞偏短。</div></figcaption>
   </figure>
-  <div class="note">把 ${counts.none} 组"未见"直接解释成"未落实"是本报告最容易犯的错。可核验的只有一件事：<b>在已接通的地方栏目里，没有找到标题层面的对应文件。</b></div>
+  <div class="note">"未见"在本报告中的含义限于：在已接通的地方栏目中，未检索到标题层面匹配的对应文件。</div>
 
-  <h2><span class="num">五</span>发现三：跨地区差异首先是可见度差异</h2>
-  <p>各单元观察到的跟进组数差别很大，但把"近 90 天公开文件数"一起画出来就能看出：跟进组数多的单元，恰恰是公开文件多的单元。这不是效率差异的证据，而是观察能力的差异——栏目公开得越密，能被匹配到的机会越多。</p>
+  <h2><span class="num">五</span>地区差异：跟进组数与文件公开密度同向变动</h2>
+  <p>各单元观察到的跟进组数差异较大。将"近 90 天公开文件数"一并列示可见，跟进组数较多的单元，公开文件数量同样较多。栏目收录范围与更新频率直接影响文件被匹配到的概率，该关系不宜解读为行政效率差异。</p>
   <figure>
     ${svgDensityScatter(units)}
-    <figcaption><b>图 4　文件公开密度与观察到的跟进组数。</b>横轴为该单元近 90 天公开的政策类文件数（对数刻度，否则最高值会把其余点压成一线），纵轴为确认跟进组数，点旁标注"跟进组数/可判组数"。<div class="source">仅 ${units.length} 个观测点，本图只作描述，<b>不做回归、不做显著性判断</b>，也不支持"公开越多跟进越快"这类因果表述。</div></figcaption>
+    <figcaption><b>图 4　文件公开密度与观察到的跟进组数。</b>横轴为该单元近 90 天公开的政策类文件数（对数刻度），纵轴为确认跟进组数，点旁标注跟进组数与有效样本组数。<div class="source">仅 ${units.length} 个观测点，本图为描述性比较，不作回归与显著性检验，亦不支持"公开越多、跟进越快"一类因果表述。</div></figcaption>
   </figure>
   <table>
     <caption><b>表 1　地方单元台账</b>（按确认跟进组数排序）</caption>
     <colgroup><col style="width:12%"/><col style="width:19%"/><col style="width:12%"/><col style="width:9%"/><col style="width:8%"/><col style="width:8%"/><col style="width:11%"/><col style="width:21%"/></colgroup>
-    <thead><tr><th>单元</th><th>层级</th><th class="num">近90天文件</th><th class="num">可判组</th><th class="num">跟进</th><th class="num">先行</th><th class="num">中位时滞</th><th>栏目更新至</th></tr></thead>
+    <thead><tr><th>单元</th><th>层级</th><th class="num">近90天文件</th><th class="num">有效样本</th><th class="num">跟进</th><th class="num">先行</th><th class="num">中位时滞</th><th>栏目更新至</th></tr></thead>
     <tbody>${unitTable}</tbody>
   </table>
   ${
@@ -811,21 +812,21 @@ export function renderReportHtml(model: ReportModel, result: TransferResult): st
       ? `<table>
     <caption><b>表 2　未纳入的单元及原因</b></caption>
     <colgroup><col style="width:13%"/><col style="width:17%"/><col style="width:12%"/><col style="width:16%"/><col style="width:42%"/></colgroup>
-    <thead><tr><th>单元</th><th>层级</th><th class="num">近90天文件</th><th>栏目更新至</th><th>排除原因</th></tr></thead>
+    <thead><tr><th>单元</th><th>层级</th><th class="num">近90天文件</th><th>栏目更新至</th><th>未纳入原因</th></tr></thead>
     <tbody>${excludedTable}</tbody>
   </table>
-  <p class="source">未纳入不等于"没有跟进"，只表示该栏目更新过疏，无法支撑"是否跟进"的判断。</p>`
+  <p class="source">未纳入指该栏目更新频率不足，无法支撑是否跟进的判断，不代表该单元未出台相关文件。</p>`
       : ''
   }
 
-  <h2><span class="num">六</span>"全国层面"能说到什么程度</h2>
-  <p>这是本报告最需要克制的一节。把可得性单独画出来，是为了让读者一眼看到"全国"这个词的边界在哪里。</p>
+  <h2><span class="num">六</span>观测范围与推断限度</h2>
+  <p>本节列示观测可得性，用以说明结论的适用范围。</p>
   <figure>
     ${svgCoverage(model)}
-    <figcaption><b>图 5　观测可得性。</b>${coverage.target} 个省级单位中，${coverage.crawled} 个栏目可解析，${coverage.usable} 个满足"近 90 天 ≥6 份且仍在更新"的门槛，最终进入判定。<div class="source">未接通的单位多为门户反爬、栏目结构变更或列表由脚本渲染；这类缺口无法用推测补齐。</div></figcaption>
+    <figcaption><b>图 5　观测可得性。</b>${coverage.target} 个省级单位中，${coverage.crawled} 个栏目可解析，${coverage.usable} 个满足"近 90 天不少于 6 份且仍在更新"的准入门槛，进入判定。<div class="source">未接通单元多为门户反爬、栏目结构调整或列表由脚本渲染，此类缺口无法以推测补齐。</div></figcaption>
   </figure>
-  <p>因此本报告的结论只对 ${coverage.usable} 个单元成立。要回答"全国层面是否存在差异"，需要的不是更强的模型，而是更多能稳定抓取的省级栏目——这是数据可得性问题，不是方法问题。</p>
-  <div class="warn"><b>明确不做的三件事：</b>①不给未接通省份插补时滞；②不用 ${counts.respond} 组样本做地区间显著性检验；③不用"东部快、西部慢"这类叙事包装样本缺口。</div>
+  <p>据此，本报告结论适用于 ${coverage.usable} 个可用单元。回答"全国层面是否存在差异"，所需的是更多可稳定抓取的省级栏目，而非更复杂的模型。</p>
+  <div class="note">未接通单元在本报告中留空，不作插补；${counts.respond} 组样本用于描述现象，不作地区间显著性检验；区域差异不在本报告的解释范围内。</div>
 
   <h2><span class="num">七</span>明细与证据</h2>
   <table>
@@ -834,7 +835,7 @@ export function renderReportHtml(model: ReportModel, result: TransferResult): st
     <thead><tr><th>#</th><th>单元</th><th>领域</th><th>中央发文</th><th>地方发文</th><th class="num">时滞</th><th>地方文件（节选）</th></tr></thead>
     <tbody>${respondTable}</tbody>
   </table>
-  <p class="source">每格均可回原始栏目核对。地方文件名称为节选，完整标题与链接见线上对应页面。</p>
+  <p class="source">各格均可回溯至原始栏目核对。地方文件名称作节选，完整标题与链接见平台对应页面。</p>
   ${
     preTable
       ? `<table>
@@ -843,17 +844,17 @@ export function renderReportHtml(model: ReportModel, result: TransferResult): st
     <thead><tr><th>#</th><th>单元</th><th>领域</th><th>地方发文</th><th>中央发文</th><th class="num">提前</th><th>地方文件（节选）</th></tr></thead>
     <tbody>${preTable}</tbody>
   </table>
-  <p class="source">"先行"只表示时间上更早，不表示因果方向；地方试点先于中央统一部署是常见现象。个别先行组间隔超过 3 个月，通常是地方在该领域的常态化部署，与中央锚点未必针对同一议题，仅作并列参考。</p>`
+  <p class="source">"先行"仅表示时间在前，不表示因果方向。地方试点先于中央统一部署属常见情形。个别先行组间隔超过 3 个月，多为地方在该领域的常态化部署，与中央锚点未必针对同一事项，仅作并列参考。</p>`
       : ''
   }
 
-  <h2><span class="num">八</span>风险提示与局限</h2>
+  <h2><span class="num">八</span>说明事项</h2>
   <ul>
-    <li><b>主题级配对，非文件级配对。</b>中央与地方文件之间没有官方对应编号，只能按领域关键词匹配，存在错配与漏配。</li>
-    <li><b>只覆盖"出文"这一种落实形式。</b>会议部署、指标分解、资金下达等不出文的落实，本方法完全看不到。</li>
-    <li><b>样本不足以支撑统计推断。</b>${counts.respond} 组观测只能描述现象，不能估计分布、不能做组间检验。</li>
-    <li><b>数据为静态快照。</b>本报告基于 ${model.dataAt ? fmtDate(model.dataAt.slice(0, 10)) : '—'} 的采集结果；地方栏目持续更新，重新采集后数字会变。</li>
-    <li><b>未使用统计年鉴校准。</b>地方文件数量受栏目设置影响，不宜直接当作治理强度指标。</li>
+    <li><b>配对方式。</b>按政策领域匹配，非逐份文件对应。中央与地方文件之间无官方对应编号，存在错配与漏配的可能。</li>
+    <li><b>统计对象。</b>仅统计公开的政策文件文本。会议部署、指标分解、资金下达等未形成公开文本的落实情形，不在统计范围内。</li>
+    <li><b>样本量。</b>${counts.respond} 组观测用于描述现象，不作分布估计与组间检验。</li>
+    <li><b>数据时点。</b>基于 ${model.dataAt ? fmtDate(model.dataAt.slice(0, 10)) : '—'} 的采集结果。地方栏目持续更新，重新采集后数值会变化。</li>
+    <li><b>单位口径。</b>地方文件数量受栏目设置影响，不宜直接作为治理强度指标。</li>
   </ul>
 
   <h2><span class="num">附</span>口径定义与生成信息</h2>
@@ -862,18 +863,18 @@ export function renderReportHtml(model: ReportModel, result: TransferResult): st
     <colgroup><col style="width:20%"/><col style="width:80%"/></colgroup>
     <thead><tr><th>术语</th><th>定义</th></tr></thead>
     <tbody>
-      <tr><td>确认跟进</td><td>地方文件标题命中领域关键词，且发布日期晚于中央锚点发文日，且属于政策文件</td></tr>
-      <tr><td>地方先行</td><td>同类地方文件早于中央锚点发文日，时滞记为负</td></tr>
-      <tr><td>疑似承接</td><td>标题未命中，但正文中同一主题多次出现且晚于中央发文；单列，不计入时滞</td></tr>
-      <tr><td>超出观测窗</td><td>中央发文日落在该单元栏目可回溯范围之外，无法判断</td></tr>
-      <tr><td>可判配对</td><td>排除不可用单元与超出观测窗后的组合数，本期 ${counts.observable} 组</td></tr>
-      <tr><td>中位时滞</td><td>${counts.respond} 组时滞的中位数，避免均值被长尾拉动</td></tr>
+      <tr><td>确认跟进</td><td>地方文件标题命中领域关键词，发布日期晚于中央锚点发文日期，且属政策文件</td></tr>
+      <tr><td>地方先行</td><td>同类地方文件早于中央锚点发文日期，时滞记为负</td></tr>
+      <tr><td>相关文件</td><td>标题未命中，正文中同一主题多次出现且晚于中央发文；单列，不计入时滞</td></tr>
+      <tr><td>超出观测窗</td><td>中央发文日期落在该单元栏目可回溯范围之外，无法判断</td></tr>
+      <tr><td>有效样本</td><td>排除不可用单元与超出观测窗后的组合数，本期 ${counts.observable} 组</td></tr>
+      <tr><td>中位时滞</td><td>${counts.respond} 组时滞的中位数，用于减少长尾影响</td></tr>
     </tbody>
   </table>
   <div class="foot">
-    本报告由宏策智研（政策证据工作台）于 ${stamp} ${clock} 自动生成，数据快照 ${model.dataAt ? fmtDate(model.dataAt.slice(0, 10)) : '—'}。<br/>
-    所有结论均可回溯到原始栏目，但推断部分（尤其是差异解释）不构成政策效果估计或决策建议。引用时请同时引用样本量与口径说明。<br/>
-    报告版本 v1.0 · 生成方式：前端报告引擎（内联样式与矢量图，无外部依赖，可离线打开与打印）
+    本报告由经纬纵横（宏观政策研究平台）于 ${stamp} ${clock} 生成，数据快照 ${model.dataAt ? fmtDate(model.dataAt.slice(0, 10)) : '—'}。<br/>
+    报告结论与明细均可回溯至原始栏目。引用时请一并标注样本量与统计口径。<br/>
+    报告版本 v1.0 · 生成方式：平台报告引擎（内联样式与矢量图，无外部依赖，可离线打开与打印）
   </div>
 </div>
 </body>
@@ -889,7 +890,7 @@ export function downloadReportHtml(model: ReportModel, result: TransferResult): 
   const date = model.generatedAt;
   const stamp = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
   anchor.href = url;
-  anchor.download = `宏策智研_央地传导观察报告_${stamp}.html`;
+  anchor.download = `经纬纵横_央地传导观察报告_${stamp}.html`;
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();

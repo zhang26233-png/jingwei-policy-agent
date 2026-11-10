@@ -18,9 +18,9 @@ export type Quadrant = 'synergy' | 'single' | 'idle' | 'conflict';
 // 若把相对靠前的渠道直接叫"协同有效"，读者会以为执行条件已经合格。
 export const QUADRANT_META: Record<Quadrant, { label: string; desc: string; tone: 'good' | 'warn' | 'bad' }> = {
   synergy: { label: '双高协同', desc: '方向一致，执行条件在本期相对最完备', tone: 'good' },
-  idle: { label: '一致但缺条件', desc: '方向一致，但目标刻度、责任、资金或考核跟不上', tone: 'warn' },
-  single: { label: '各自为战', desc: '单个文件具备落地条件，但渠内方向互相抵消', tone: 'warn' },
-  conflict: { label: '双向偏弱', desc: '方向散、条件也虚，最容易变成空转', tone: 'bad' },
+  idle: { label: '一致但缺条件', desc: '方向一致，但目标刻度、责任主体、资金来源或考核方式不完备', tone: 'warn' },
+  single: { label: '各自为战', desc: '单个文件具备落地条件，但同一渠道内方向相互抵消', tone: 'warn' },
+  conflict: { label: '双向偏弱', desc: '方向不一致，执行条件亦不完备，落地难度最大', tone: 'bad' },
 };
 
 export interface ChannelSynergy {
@@ -128,27 +128,27 @@ export function buildSynergy(policies: Policy[]): SynergyResult {
   const narrative: string[] = [];
   const lead = [...channels].sort((a, b) => b.policyCount - a.policyCount)[0];
   narrative.push(
-    `本期 ${allGraded.length} 份政策文件总体一致性 ${pci} 分、可执行性 ${pei} 分。` +
-      `九条渠道里，${counts.synergy} 条落在"${QUADRANT_META.synergy.label}"、${counts.idle} 条"${QUADRANT_META.idle.label}"、` +
-      `${counts.single} 条"${QUADRANT_META.single.label}"、${counts.conflict} 条"${QUADRANT_META.conflict.label}"。`,
+    `本期 ${allGraded.length} 份政策文件的总体一致性指数为 ${pci} 分，可执行性指数为 ${pei} 分。` +
+      `九条渠道中，${counts.synergy} 条属"${QUADRANT_META.synergy.label}"、${counts.idle} 条属"${QUADRANT_META.idle.label}"、` +
+      `${counts.single} 条属"${QUADRANT_META.single.label}"、${counts.conflict} 条属"${QUADRANT_META.conflict.label}"。`,
   );
   if (lead) {
     narrative.push(
-      `政策投放最集中的是「${lead.name}」（${lead.policyCount} 项），一致性 ${lead.pci} 分、可执行性 ${lead.pei} 分，属于${
+      `政策文本最集中的渠道为「${lead.name}」，共 ${lead.policyCount} 项，一致性 ${lead.pci} 分、可执行性 ${lead.pei} 分，属${
         QUADRANT_META[lead.quadrant].label
-      }——${QUADRANT_META[lead.quadrant].desc}。`,
+      }，即${QUADRANT_META[lead.quadrant].desc}。`,
     );
   }
   const weakestPei = [...allGraded].sort((a, b) => a.pei - b.pei)[0];
   if (weakestPei) {
     narrative.push(
-      `最需要补的是执行条件：《${weakestPei.short}》可执行性仅 ${weakestPei.pei} 分，主要缺口是${weakestPei.gaps.slice(0, 2).join('、') || '文本信息不足'}。`,
+      `执行条件缺口最大的是《${weakestPei.short}》，可执行性 ${weakestPei.pei} 分，主要缺口为${weakestPei.gaps.slice(0, 2).join('、') || '文本信息不足'}。`,
     );
   }
   const flipped = channels.filter((channel) => (channel.coherence.parts[1].score ?? 100) < 70);
   if (flipped.length > 0) {
     narrative.push(
-      `「${flipped.map((item) => item.short).join('」「')}」在观察期内出现过方向翻转，属于跨期不一致，信号可信度弱于同期一致性。`,
+      `「${flipped.map((item) => item.short).join('」「')}」在观察期内出现方向变化，属跨期不一致，其政策信号弱于同期取向一致的情形。`,
     );
   }
 
@@ -159,8 +159,8 @@ export function buildSynergy(policies: Policy[]): SynergyResult {
   ).length;
   if (allGraded.length > 0 && fundingFull / allGraded.length <= 0.2) {
     narrative.push(
-      `可执行性五项里"资源有保障"是系统性短板：${allGraded.length} 份文件中仅 ${fundingFull} 份写明资金来源或规模。` +
-        `经缺失归因复核，这属原文未写而非抽取漏项——中央文件多不附带资金安排，落地依赖后续配套文件与地方财力。`,
+      `可执行性五项中，"资源有保障"为普遍短板：${allGraded.length} 份文件中仅 ${fundingFull} 份写明资金来源或规模。` +
+        `此项缺失源于原文未作规定，中央文件通常不附带资金安排，落实依赖后续配套文件与地方财力。`,
     );
   }
 
@@ -179,16 +179,16 @@ export function buildSynergy(policies: Policy[]): SynergyResult {
     narrative,
     caveats: [
       collected.length === 0
-        ? '当前没有自动采集的语料，以下结果基于内置示例条目，只能用于查看页面功能，不能作为分析结论。'
+        ? '当前未获取自动采集语料，以下结果基于内置校订条目，仅用于查看功能，不作为分析结论。'
         : excluded > 0
-          ? `测度样本为自动采集的 ${allGraded.length} 份政策文件（采集语料共 ${sample.length} 条，非政策类已剔除）；另有 ${excluded} 条内置示例条目（2025 年存量、手工录入）未计入，以免与"近三个月"口径混用。`
-          : `测度样本为自动采集的 ${allGraded.length} 份政策文件，与「质量体检」页口径一致。`,
-      '两个指数都只衡量"文本写没写清楚"，不衡量政策落地后的实际效果；效果需接统计数据另做。',
-      '一致性判断依赖关键词规则的扩张／收紧识别，属于编码判断，须经人工抽检并报告准确率。',
-      '渠道归属按正文关键词密度自动判定，一份文件可同时进入多条渠道；个别文件会因正文提及出口、口岸等词被归入外贸渠道，属已知噪声，可在抽检表里一并复核。',
-      '可执行性五项里有三项依赖抽取字段，字段覆盖不足会低估得分；对照「质量体检」页可区分"原文没写"与"没抽到"。',
-      `四象限分界线取本期九条渠道的中位数（一致性 ${split.pci} 分、可执行性 ${split.pei} 分），是相对位置而非绝对门槛。`,
-      '样本为近三个月中央文件，结论只描述本期，不能外推为长期取向。',
+          ? `测算样本为自动采集的 ${allGraded.length} 份政策文件（采集语料共 ${sample.length} 条，非政策类已剔除）；另有 ${excluded} 条内置校订条目（2025 年存量、手工录入）未计入，以避免与近三个月口径混用。`
+          : `测算样本为自动采集的 ${allGraded.length} 份政策文件。`,
+      '两个指数衡量政策文本的明确程度，不衡量政策实施后的实际效果；效果评估需另行接入统计数据。',
+      '一致性判断依据关键词规则识别扩张与收紧表述，属编码判断。',
+      '渠道归属按正文关键词密度判定，一份文件可同时进入多条渠道；个别文件因正文提及出口、口岸等词被归入外贸渠道，属已知误差。',
+      '可执行性五项中有三项依赖抽取字段，字段覆盖不足将低估得分。',
+      `四象限分界线取九条渠道的中位数（一致性 ${split.pci} 分、可执行性 ${split.pei} 分），表示相对位置，不设绝对门槛。`,
+      '样本为近三个月中央文件，结论仅描述本期情况。',
     ],
     method: [
       ...coherence.method,

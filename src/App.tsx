@@ -7,12 +7,10 @@ import {
   GitCompareArrows,
   Library,
   Map,
-  ClipboardCheck,
   Menu,
   Network,
   Radar,
   Route,
-  ShieldCheck,
   X,
 } from 'lucide-react';
 import './App.css';
@@ -27,23 +25,19 @@ import { Workspace } from './views/Workspace';
 import { PolicyLibrary } from './views/PolicyLibrary';
 import { ImpactView } from './views/ImpactView';
 import { CompareView } from './views/CompareView';
-import { MethodView } from './views/MethodView';
-import { AuditView } from './views/AuditView';
 import { SynergyView } from './views/SynergyView';
 import { TransferView } from './views/TransferView';
 import { ReportView } from './views/ReportView';
 
 const NAV_ITEMS: { id: ViewName; label: string; icon: typeof FileSearch }[] = [
-  { id: 'briefing', label: '一键研判', icon: Radar },
+  { id: 'briefing', label: '政策扫描', icon: Radar },
   { id: 'library', label: '政策库', icon: Library },
   { id: 'impact', label: '省级影响', icon: Map },
   { id: 'compare', label: '政策对比', icon: GitCompareArrows },
-  { id: 'synergy', label: '协同测度', icon: Network },
+  { id: 'synergy', label: '政策协同', icon: Network },
   { id: 'transfer', label: '央地传导', icon: Route },
   { id: 'report', label: '研究报告', icon: FileText },
-  { id: 'audit', label: '质量体检', icon: ClipboardCheck },
-  { id: 'workspace', label: '自由追问', icon: FileSearch },
-  { id: 'method', label: '方法与边界', icon: ShieldCheck },
+  { id: 'workspace', label: '专题问答', icon: FileSearch },
 ];
 
 interface CorpusState {
@@ -263,10 +257,8 @@ function App() {
         requestedView === 'impact' ||
         requestedView === 'compare' ||
         requestedView === 'synergy' ||
-        requestedView === 'audit' ||
         requestedView === 'transfer' ||
-        requestedView === 'report' ||
-        requestedView === 'method'
+        requestedView === 'report'
       ) {
         setView(requestedView);
       }
@@ -318,15 +310,15 @@ function App() {
   const exportCurrent = () => {
     if (view === 'compare' && compareIds.length > 0) {
       const selected = corpusPolicies.filter((policy) => compareIds.includes(policy.id));
-      downloadText('宏策智研_政策对比.md', buildCompareReport(selected));
+      downloadText('经纬纵横_政策对比.md', buildCompareReport(selected));
       notify('对比表已导出');
       return;
     }
     if (!result) {
-      notify('请先运行一次分析');
+      notify('请先发起一次分析');
       return;
     }
-    downloadText('宏策智研_政策研究简报.md', buildReport(result));
+    downloadText('经纬纵横_政策研究简报.md', buildReport(result));
     notify('研究简报已导出');
   };
 
@@ -336,11 +328,11 @@ function App() {
   return (
     <div className="app-shell">
       <header className="site-header">
-        <button className="brand" onClick={() => navigate('briefing')} aria-label="返回一键研判">
-          <span className="brand-mark">策</span>
+        <button className="brand" onClick={() => navigate('briefing')} aria-label="返回政策扫描">
+          <span className="brand-mark">纬</span>
           <span className="brand-text">
-            <strong>宏策智研</strong>
-            <small>MACRO POLICY EVIDENCE</small>
+            <strong>经纬纵横</strong>
+            <small>POLICY RESEARCH PLATFORM</small>
           </span>
         </button>
 
@@ -403,7 +395,7 @@ function App() {
             {!corpus.loading && corpus.online &&
               `已接入 ${corpus.sources.filter((source) => source.ok).length}/${corpus.sources.length} 个官方来源 · 语料更新于 ${formatTime(corpus.updatedAt)}`}
             {!corpus.loading && !corpus.online &&
-              `未连接采集服务（${corpus.error ?? '后端未启动'}），当前仅展示内置校订语料。启动后端后即可自动检索中央政策。`}
+              `采集服务未连接，当前展示内置校订语料。`}
           </span>
         </div>
         <div className="source-pills">
@@ -434,7 +426,6 @@ function App() {
           onScan={scanNow}
           onOpenPolicy={setSelectedPolicyId}
           onGoImpact={() => navigate('impact')}
-          onGoMethod={() => navigate('method')}
           onGoLibrary={() => navigate('library')}
         />
       </div>
@@ -453,7 +444,6 @@ function App() {
           onCompare={toggleCompare}
           onExport={exportCurrent}
           onGoLibrary={() => navigate('library')}
-          onGoMethod={() => navigate('method')}
         />
       )}
       {view === 'library' && (
@@ -488,12 +478,10 @@ function App() {
       )}
       {view === 'transfer' && <TransferView policies={corpusPolicies} />}
       {view === 'report' && <ReportView policies={corpusPolicies} />}
-      {view === 'audit' && <AuditView onOpenPolicy={setSelectedPolicyId} />}
-      {view === 'method' && <MethodView sources={corpus.sources} />}
 
       <footer className="site-footer">
-        <span>宏策智研 · 中国宏观经济政策证据分析智能体</span>
-        <span>校赛 MVP · 2026.10 · 研究辅助，不构成决策建议</span>
+        <span>经纬纵横 · 宏观政策研究平台</span>
+        <span>数据来源：国务院、财政部、中国人民银行等公开栏目</span>
       </footer>
 
       {compareIds.length > 0 && view !== 'compare' && (

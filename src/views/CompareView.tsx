@@ -16,10 +16,10 @@ const ROWS: { label: string; render: (policy: Policy) => React.ReactNode }[] = [
   { label: '生效时间', render: (policy) => policy.effective },
   {
     label: '政策工具',
-    render: (policy) => policy.instruments.join('；') || '原文未出现可结构化工具名，请查看原文',
+    render: (policy) => policy.instruments.join('；') || '原文未载明可结构化工具名称，请核对原文',
   },
-  { label: '作用对象', render: (policy) => policy.targets.join('；') || '未识别' },
-  { label: '政策目标', render: (policy) => policy.goals.join('；') || '未识别' },
+  { label: '作用对象', render: (policy) => policy.targets.join('；') || '原文未载明' },
+  { label: '政策目标', render: (policy) => policy.goals.join('；') || '原文未载明' },
   { label: '来源等级', render: (policy) => <SourceBadge level={policy.sourceLevel} /> },
   {
     label: '关键条款',
@@ -37,17 +37,17 @@ export function CompareView({ selected, onOpen, onRemove, onGoLibrary, onExport 
             POLICY COMPARISON
           </div>
           <h1>政策对比</h1>
-          <p>同一张表里比较工具、对象、目标与约束。系统拒绝只按“政策数量”判断力度。</p>
+          <p>在同一表格中比较政策工具、作用对象、政策目标与约束条件。政策力度不以文件数量衡量。</p>
         </header>
         <div className="empty-compare">
           <div className="empty-compare-icon">
             <GitCompareArrows size={28} />
           </div>
-          <h2>还没有选择对比政策</h2>
-          <p>从政策库中选择 2—3 项政策。建议对比同一目标下的不同工具，例如财政贴息与货币降息。</p>
+          <h2>尚未选择对比政策</h2>
+          <p>请从政策库中选择 2 至 3 项政策，建议选择目标相同、工具不同的政策，例如财政贴息与政策性降息。</p>
           <button className="primary-button" onClick={onGoLibrary}>
             <Plus size={16} />
-            去政策库选择
+            前往政策库
           </button>
         </div>
       </div>
@@ -69,7 +69,7 @@ export function CompareView({ selected, onOpen, onRemove, onGoLibrary, onExport 
         <div className="page-heading-row">
           <div>
             <h1>政策对比</h1>
-            <p>比较的是工具和约束，不是宣传口号。不同层级、不同时间的政策不能简单相加。</p>
+            <p>本页比较政策工具与约束条件。层级不同、发布时间不同的政策，不作简单加总。</p>
           </div>
           <div className="compare-actions">
             <button className="secondary-button" onClick={onGoLibrary}>
@@ -112,7 +112,7 @@ export function CompareView({ selected, onOpen, onRemove, onGoLibrary, onExport 
             这组政策跨越 <strong>{dates[0]}</strong> 至 <strong>{dates[dates.length - 1]}</strong>，
             涉及 <strong>{issuers.size}</strong> 个发布主体、<strong>{types.size}</strong> 类工具。
             {selected.length > 1
-              ? '比较时应先区分“规则型政策”与“资金型政策”，再看它们是否作用于同一对象。'
+              ? '比较时应先区分规则型政策与资金型政策，再判断二者是否作用于同一对象。'
               : '至少选择两项政策才能形成对照。'}
           </p>
         </div>

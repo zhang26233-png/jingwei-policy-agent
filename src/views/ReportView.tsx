@@ -84,10 +84,10 @@ export function ReportView({ policies }: ReportViewProps) {
       <header className="rpt-head">
         <div>
           <span className="rpt-kicker">RESEARCH REPORT · 研究报告</span>
-          <h1>把央地传导的观察，写成一份能交出去的报告</h1>
+          <h1>央地政策传导观察报告</h1>
           <p>
-            报告按市场研究报告的体例组织：核心结论前置，图 1—5 依次回答"接没接、差几天、差在哪、能说到哪"，
-            表 1—5 给出可核对的台账与口径。导出为自包含 HTML，可直接发出去，也可用浏览器打印成 A4 或 PDF。
+            报告按市场研究报告体例编排：核心结论前置，图 1 至图 5 依次呈现跟进情况、时滞分布、差异来源与观测范围，
+            表 1 至表 5 列示明细台账与统计口径。导出文件为自包含 HTML，可直接分发，也可打印为 A4 或 PDF。
           </p>
         </div>
         <div className="rpt-actions">
@@ -113,7 +113,7 @@ export function ReportView({ policies }: ReportViewProps) {
       {loading && (
         <div className="rpt-state">
           <RefreshCw size={18} className="is-spinning" />
-          <span>正在读取地方语料并生成报告…</span>
+          <span>正在读取地方语料并生成报告</span>
         </div>
       )}
 
@@ -131,7 +131,7 @@ export function ReportView({ policies }: ReportViewProps) {
         <div className="rpt-state">
           <FileText size={18} />
           <span>
-            地方语料尚未就绪（<code>/api/locals</code> 无可判数据）。先跑一次地方采集，或换用「央地传导」页核对数据源状态。
+            地方语料尚未就绪，当前无可用于判定的数据。请先执行一次地方语料采集，或至「央地传导」页查看数据源状态。
           </span>
         </div>
       )}
@@ -140,7 +140,7 @@ export function ReportView({ policies }: ReportViewProps) {
         <>
           <div className="rpt-facts">
             <span>
-              <b>{model.counts.observable}</b> 组可判配对
+              <b>{model.counts.observable}</b> 组有效样本
             </span>
             <span>
               <b>{model.counts.respond}</b> 组确认跟进

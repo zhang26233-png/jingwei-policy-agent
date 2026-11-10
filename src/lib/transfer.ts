@@ -478,38 +478,36 @@ export function buildTransfer(payload: LocalPayload | null, policies: { id: stri
 
   const findings: string[] = [];
   findings.push(
-    `在 ${usable.length} 个地方单元、${rows.length} 项重点中央政策之间，可观察的组合是 ${observablePairs} 个` +
-      `（另有 ${outsidePairs} 个落在各栏目的观测窗之外，不做判断）；其中观察到 ${respondPairs} 组"中央发文—地方跟进"，` +
+    `在 ${usable.length} 个地方单元、${rows.length} 项重点中央政策之间，可比对的组合为 ${observablePairs} 个` +
+      `（另有 ${outsidePairs} 个落在观测窗之外，不作判断）。其中观察到 ${respondPairs} 组地方跟进，` +
       `覆盖 ${summary.respondedThemes} 项政策，中位时滞 ${summary.medianLag ?? '—'} 天。`,
   );
   findings.push(
-    `样本的地理分布是：${regions.join('、')}，共 ${usable.length} 个单元——` +
-      `这是一个"东部与华北为主、西部有点、中部缺位"的便利样本。所以本页只能回答"这几地之间差多少"，` +
-      `不能回答"全国层面有没有差异"；后者需要每省一个抓取适配器或直接购买政策数据库，靠现有公开栏目做不到。`,
+    `样本覆盖${regions.join('、')}，共 ${usable.length} 个单元，以东部与华北为主，中部与西南部分单元未纳入。` +
+      `本页结论适用于上述单元之间的比较，不对全国分布作推断。`,
   );
 
   const top = byProvince[0];
   if (top && respondPairs > 0 && top.respond / respondPairs >= 0.4) {
     findings.push(
-      `${top.short}一家占了 ${top.respond}/${respondPairs} 组跟进，很像是"它动得最快"。但它的栏目同时收市属委办局和区级文件` +
-        `（近 90 天 ${top.recentDocs} 份，其他地方多在个位数到几十份），"看得见"的程度本来就更高。` +
-        `所以跨地区比时滞，比的其实是各栏目的文件公开密度，不是行政效率——这一层必须在结论里说清楚，否则会把收录差异读成执行力差异。`,
+      `${top.short}占 ${top.respond}/${respondPairs} 组跟进。该单元栏目同时收录市属委办局与区级文件` +
+        `（近 90 天 ${top.recentDocs} 份，其余单元多在数十份以内），文件公开密度明显较高。` +
+        `跨单元比较时滞，在很大程度上反映的是各栏目的文件公开密度，而非行政效率差异。`,
     );
   }
 
   const preHeavy = byProvince.filter((item) => item.pre >= 2 && item.pre > item.respond);
   if (preHeavy.length > 0) {
     findings.push(
-      `${preHeavy.map((item) => `${item.short}先行 ${item.pre} 组`).join('、')}——该地的动作多数早于中央发文。` +
-        `这些领域里，中央文件更像是在追认地方已有做法，把它算成"地方响应慢"方向就反了；` +
-        `反过来也说明本期中央文件并非全部是"新设政策"，有相当一部分是存量经验的上升。`,
+      `${preHeavy.map((item) => `${item.short}先行 ${item.pre} 组`).join('、')}，其先行组合多于跟进组合，多数动作早于中央发文。` +
+        `相关领域内，中央文件更多是对地方已有做法的确认；将其计为"响应滞后"，方向与实际不符。`,
     );
   }
 
   if (summary.fastest) {
     findings.push(
-      `最快的一次响应是「${summary.fastest.province}」对「${summary.fastest.theme}」，` +
-        `中央发文后 ${summary.fastest.lag} 天出台对应文件；最慢的一次是「${summary.slowest?.province}」，用了 ${summary.slowest?.lag} 天。`,
+      `响应最快的一组为${summary.fastest.province}的${summary.fastest.theme}，中央发文后 ${summary.fastest.lag} 天出台对应文件；` +
+        `最慢一组为${summary.slowest?.province}，间隔 ${summary.slowest?.lag} 天。`,
     );
   }
   const likelyRows = rows.flatMap((row) =>
@@ -519,10 +517,10 @@ export function buildTransfer(payload: LocalPayload | null, policies: { id: stri
   );
   if (likelyRows.length > 0) {
     findings.push(
-      `另有 ${likelyRows.length} 组属于"标题没写、正文里反复提到"的疑似承接（如${likelyRows
+      `另有 ${likelyRows.length} 组为标题未命中、正文多次提及的相关文件（如${likelyRows
         .slice(0, 2)
         .map((item) => `${item.province}·${item.theme} +${item.lag} 天`)
-        .join('、')}），单独标注待核，不计入上面的时滞统计——正文提到不等于落实，混算会把时滞压短。`,
+        .join('、')}），单独标注待核，不计入时滞统计。`,
     );
   }
   // 没有"跟进"的主题要分两种，混在一起说会自相矛盾：
@@ -535,21 +533,21 @@ export function buildTransfer(payload: LocalPayload | null, policies: { id: stri
   const emptyRows = noRespond.filter((row) => !preOnly.includes(row));
   if (preOnly.length > 0) {
     findings.push(
-      `${preOnly.map((row) => row.theme.short).join('、')}这 ${preOnly.length} 项在观察窗内没有新的地方文件，` +
-        `但地方此前已发过同领域文件——属于"早就做了、暂时不需要再发"，不能算作未跟进。`,
+      `${preOnly.map((row) => row.theme.short).join('、')}共 ${preOnly.length} 项在观测窗内无新增地方文件，` +
+        `但此前已发布同领域文件，属已有部署，不计为未跟进。`,
     );
   }
   if (emptyRows.length > 0) {
     findings.push(
-      `剩下 ${emptyRows.length} 项政策（${emptyRows.map((row) => row.theme.short).join('、')}）在已抓取的地方文件里连标题和正文都没有匹配到——` +
-        `这可能是尚未发文，也可能落在部门文件或不出文的执行环节，不能直接判为"没做"。`,
+      `余下 ${emptyRows.length} 项政策（${emptyRows.map((row) => row.theme.short).join('、')}）在已抓取文本中未见标题与正文匹配，` +
+        `既可能尚未发文，也可能体现在部门文件或非文本形式的执行环节，不作未落实判断。`,
     );
   }
   if (prePairs > 0) {
     // 方法论提示只留一句，细节已在上面按主题分类说明，避免同一件事讲三遍。
     findings.push(
-      `合计 ${prePairs} 组"地方文件早于中央文件"。这类格子要把方向反过来读：不是地方响应中央，而是中央吸收了地方做法；` +
-        `若把它并进时滞统计，中位数会被系统性压短。`,
+      `合计 ${prePairs} 组地方文件早于中央文件。此类组合的因果方向与响应关系相反，多为中央文件吸收地方已有做法；` +
+        `若计入时滞统计，中位数将系统性偏低。`,
     );
   }
 

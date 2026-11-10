@@ -29,11 +29,11 @@ interface EvidenceDrawerProps {
 }
 
 const OBLIGATION_META: Record<string, { label: string; hint: string; tone: string }> = {
-  目标: { label: '目标', hint: '文件自己写明的完成时限与结果', tone: 'goal' },
+  目标: { label: '目标', hint: '原文载明的完成时限与结果', tone: 'goal' },
   约束: { label: '约束', hint: '对执行主体构成硬性要求', tone: 'bind' },
-  禁止: { label: '禁止', hint: '明确不可为的边界', tone: 'ban' },
-  激励: { label: '激励', hint: '给钱、给税惠、给政策的条款', tone: 'boost' },
-  程序: { label: '程序', hint: '谁来办、怎么办、报谁批', tone: 'flow' },
+  禁止: { label: '禁止', hint: '明确不得实施的行为', tone: 'ban' },
+  激励: { label: '激励', hint: '资金、税收优惠与政策支持条款', tone: 'boost' },
+  程序: { label: '程序', hint: '办理主体、办理方式与审批层级', tone: 'flow' },
 };
 
 const formatAmount = (item: { raw: string; value: number; unit: string }) => {
@@ -153,11 +153,11 @@ export function EvidenceDrawer({
             </div>
             <div>
               <dt>施行日</dt>
-              <dd>{policy.effectiveDate || '未写明'}</dd>
+              <dd>{policy.effectiveDate || '原文未载明'}</dd>
             </div>
             <div>
               <dt>有效期至</dt>
-              <dd>{policy.validUntil || '未写明'}</dd>
+              <dd>{policy.validUntil || '原文未载明'}</dd>
             </div>
             <div>
               <dt>正文长度</dt>
@@ -176,10 +176,10 @@ export function EvidenceDrawer({
           {policy.attachmentOnly && (
             <div className="inline-warning pd-warn">
               <span>
-                <AlertTriangle size={13} /> 内容边界
+                <AlertTriangle size={13} /> 附件说明
               </span>
-              该页面正文只有通知本身，实施方案或清单以附件（PDF/OFD）形式发布，系统未能解析附件内容。
-              需要完整条款请点下方原文链接查看附件。
+              该页正文仅为通知，实施方案或清单以附件（PDF/OFD）形式发布，附件内容未纳入解析。
+              完整条款请通过下方原文链接查阅附件。
             </div>
           )}
 
@@ -200,7 +200,7 @@ export function EvidenceDrawer({
                         ? '正文'
                         : item.ok
                           ? '附表'
-                          : '正文未读'
+                          : '未解析'
                       : item.role === 'annex'
                         ? '清单'
                         : '其他格式';
@@ -372,7 +372,7 @@ export function EvidenceDrawer({
                     </span>
                   ))
                 ) : (
-                  <span className="pd-empty">原文未出现可识别的具体工具表述</span>
+                  <span className="pd-empty">原文未载明可识别的工具表述</span>
                 )}
               </div>
             </div>
@@ -397,7 +397,7 @@ export function EvidenceDrawer({
               <div className="pd-head">
                 <Users size={15} />
                 <h3>落实安排</h3>
-                <span className="pd-head-note">谁执行、钱从哪来、什么时候交卷</span>
+                <span className="pd-head-note">执行主体、资金来源与时间节点</span>
               </div>
 
               {implementers.length > 0 && (
@@ -447,7 +447,7 @@ export function EvidenceDrawer({
               <div className="pd-head">
                 <GitBranch size={15} />
                 <h3>传导渠道</h3>
-                <span className="pd-head-note">正文关键词密度，非权重</span>
+                <span className="pd-head-note">正文关键词密度统计，非加权结果</span>
               </div>
               <div className="pd-channels">
                 {channelList.map((channel) => (

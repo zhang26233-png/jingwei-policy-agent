@@ -31,14 +31,14 @@ import './briefing.css';
 const DAY = 86400000;
 
 const STAGES = [
-  { key: 'connect', label: '连接官方来源', detail: '校验财政部、人民银行、国务院栏目可达性' },
+  { key: 'connect', label: '连接官方来源', detail: '校验国务院、财政部、中国人民银行栏目可达性' },
   { key: 'crawl', label: '抓取近期政策', detail: '按栏目列表抓取并提取正文全文' },
   { key: 'extract', label: '结构化抽取', detail: '识别文种、工具、对象、传导渠道与关键数字' },
-  { key: 'rank', label: '优先级评分', detail: '七个维度加权，输出 S/A/B/C 分级' },
-  { key: 'digest', label: '生成政策摘要', detail: '对入选政策逐条拼装主旨、事实、关键表述与缺失项' },
-  { key: 'mechanism', label: '传导机制建模', detail: '工具 → 中间变量 → 主体行为 → 宏观结果' },
-  { key: 'relation', label: '政策关系推演', detail: '配套协同、时序承接、工具互补、目标张力' },
-  { key: 'impact', label: '省级影响计算', detail: '渠道权重 × 省份结构敏感度' },
+  { key: 'rank', label: '重要性评分', detail: '七个维度加权，输出 S／A／B／C 分级' },
+  { key: 'digest', label: '生成政策摘要', detail: '逐项提取主旨、依据、关键表述与未载明事项' },
+  { key: 'mechanism', label: '传导机制分析', detail: '工具、中间变量、主体行为、宏观结果' },
+  { key: 'relation', label: '政策关系识别', detail: '配套协同、时序承接、工具互补、目标张力' },
+  { key: 'impact', label: '省级影响测算', detail: '渠道权重与省份经济结构匹配' },
 ];
 
 const WINDOWS = [
@@ -65,7 +65,6 @@ interface BriefingProps {
   onScan: (windowDays: number) => Promise<ScanOutcome>;
   onOpenPolicy: (id: string) => void;
   onGoImpact: () => void;
-  onGoMethod: () => void;
   onGoLibrary: () => void;
 }
 
@@ -77,7 +76,6 @@ export function Briefing({
   onScan,
   onOpenPolicy,
   onGoImpact,
-  onGoMethod,
   onGoLibrary,
 }: BriefingProps) {
   const [phase, setPhase] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
@@ -122,11 +120,11 @@ export function Briefing({
       setElapsed(0);
       const t0 = performance.now();
 
-      push('init', `启动一键研判：时间窗 近 ${days} 天，目标为中央层面政策原文`, 'info');
+      push('init', `启动政策扫描：时间窗为近 ${days} 天，范围为中央层面政策文件`, 'info');
       await delay(260);
       if (runRef.current !== runId) return;
 
-      push('connect', '正在连接财政部政策发布、财政新闻、人民银行条法司、国务院文件四个栏目…');
+      push('connect', '正在连接国务院、财政部、中国人民银行的政策发布栏目');
       await delay(180);
       if (runRef.current !== runId) return;
 
@@ -166,7 +164,7 @@ export function Briefing({
       await delay(320);
       if (runRef.current !== runId) return;
 
-      push('extract', `正文完整（>200 字）${bodyReady} 条，文种判别完成；未抓通正文的条目已排除在排序之外`, 'ok');
+      push('extract', `取得完整正文（200 字以上）的条目 ${bodyReady} 条，文种判别完成；未取得正文的条目不参与排序`, 'ok');
       setStageIndex(3);
       await delay(340);
       if (runRef.current !== runId) return;
@@ -176,8 +174,8 @@ export function Briefing({
       push(
         'rank',
         nextBoard.ranked.length > 0
-          ? `完成 ${nextBoard.scanned} 项政策评分，最高分 ${top.assessment.score}（${top.assessment.grade}）：${top.policy.shortTitle || top.policy.title}`
-          : '时间窗内没有可评分的政策文件，已退回全量语料',
+          ? `完成 ${nextBoard.scanned} 项政策评分，最高分 ${top.assessment.score}（${top.assessment.grade} 级）：${top.policy.shortTitle || top.policy.title}`
+          : '时间窗内没有可评分的政策文件，已改用全部语料',
         nextBoard.ranked.length > 0 ? 'ok' : 'warn',
       );
       setStageIndex(4);
@@ -196,8 +194,8 @@ export function Briefing({
       const worstGap = Object.entries(gapTally).sort((a, b) => b[1] - a[1])[0];
       push(
         'digest',
-        `为 ${nextDigests.length} 项入选政策生成摘要，${fullCount} 项字段完整度 ≥75%${
-          worstGap ? `；最常缺的是${worstGap[0]}（${worstGap[1]} 项）` : ''
+        `为 ${nextDigests.length} 项入选政策生成摘要，其中 ${fullCount} 项字段完整度达到 75%${
+          worstGap ? `；常见缺项为${worstGap[0]}（${worstGap[1]} 项）` : ''
         }`,
         'ok',
       );
@@ -241,7 +239,7 @@ export function Briefing({
       const topProvince = nextImpact.provinces[0];
       push(
         'impact',
-        `完成 34 个省级单位暴露度推演，最高为${topProvince?.name ?? '—'}（${topProvince?.exposure ?? 0}）`,
+        `完成 ${nextImpact.provinces.length} 个省级单位的影响强度测算，最高为${topProvince?.name ?? '—'}（${topProvince?.exposure ?? 0}）`,
         'ok',
       );
 
@@ -329,7 +327,7 @@ export function Briefing({
       window.setTimeout(() => setDigestCopied(false), 1800);
     } catch {
       // 剪贴板被浏览器拦时退回下载，功能不丢。
-      downloadText(`宏策智研_政策摘要_${(finishedAt ?? '').slice(0, 10)}.md`, text);
+      downloadText(`经纬纵横_政策摘要_${(finishedAt ?? '').slice(0, 10)}.md`, text);
     }
   };
   const activeRelations = useMemo(() => {
@@ -356,7 +354,7 @@ export function Briefing({
       synergy: buildSynergy(policies),
       generatedAt: finishedAt ?? new Date().toISOString(),
     });
-    downloadText(`宏策智研_一键研判简报_${(finishedAt ?? '').slice(0, 10)}.md`, content);
+    downloadText(`经纬纵横_政策扫描简报_${(finishedAt ?? '').slice(0, 10)}.md`, content);
   };
 
   const topProvinces = impact ? impact.provinces.slice(0, 6) : [];
@@ -367,16 +365,16 @@ export function Briefing({
       <section className={`bp-launch ${phase === 'running' ? 'is-running' : ''}`}>
         <div className="bp-launch-copy">
           <span className="bp-eyebrow">
-            <Sparkles size={13} /> 一键研判 · 不需要提问
+            <Sparkles size={13} /> 政策扫描
           </span>
           <h1>
-            按一下启动，系统自己去把
-            <em>近期中央政策</em>
-            找回来、排好序、讲清机制。
+            汇集近期中央政策文件，
+            <em>按重要性排序</em>
+            ，说明<span className="no-break">传导机制</span>。
           </h1>
           <p>
-            不用想提示词、不用逐条翻网页。系统从财政部、人民银行、国务院的官方栏目抓取近
-            {windowDays} 天的政策原文，抽取工具与渠道，给出优先级排序、传导链条、相互关系与省级影响。
+            系统按栏目列表检索国务院、财政部、中国人民银行等官方栏目发布、近
+            {windowDays} 天内的政策文件，提取政策工具与传导渠道，形成重要性排序、传导链条、政策关系与省级影响。
           </p>
           <div className="bp-launch-actions">
             <button
@@ -385,7 +383,7 @@ export function Briefing({
               disabled={phase === 'running'}
             >
               {phase === 'running' ? <Loader2 size={18} className="is-spinning" /> : <Radar size={18} />}
-              {phase === 'running' ? '正在扫描…' : board ? '重新扫描' : '启动扫描'}
+              {phase === 'running' ? '正在扫描' : board ? '重新扫描' : '开始扫描'}
             </button>
             <div className="bp-window-switch" role="group" aria-label="时间窗">
               {WINDOWS.map((item) => (
@@ -401,7 +399,7 @@ export function Briefing({
             </div>
           </div>
           <p className="bp-launch-hint">
-            只读取官方公开页面，不登录、不上报。另有 {policies.filter((item) => (item.origin ?? 'seed') === 'seed').length} 项人工校订语料作兜底，后端未启动时仍可演示。
+            检索范围限于官方公开页面。另有 {policies.filter((item) => (item.origin ?? 'seed') === 'seed').length} 项校订语料作为补充，采集服务未连接时仍可查看。
           </p>
         </div>
 
@@ -496,7 +494,7 @@ export function Briefing({
             {phase === 'done' && (
               <p className="is-ok">
                 <span>✓</span>
-                研判完成：排序、摘要、机制、关系、影响五份结果已生成，用时 {(elapsed / 1000).toFixed(1)} 秒。
+                扫描完成：排序、摘要、机制、关系、影响五项结果已生成，用时 {(elapsed / 1000).toFixed(1)} 秒。
               </p>
             )}
           </div>
@@ -505,27 +503,27 @@ export function Briefing({
 
       {phase === 'idle' && (
         <section className="bp-preview">
-          <h2>启动后会发生什么</h2>
+          <h2>扫描内容</h2>
           <div className="bp-preview-grid">
             <article>
               <FileText size={18} />
-              <h3>自己去抓，不用你搜</h3>
-              <p>按官方栏目列表逐条抓取近 {windowDays} 天政策原文并提取正文，不依赖搜索接口，避免关键词漏检。</p>
+              <h3>按栏目检索</h3>
+              <p>按官方栏目列表逐条抓取近 {windowDays} 天政策全文，不依赖搜索接口，避免关键词漏检。</p>
             </article>
             <article>
               <Gauge size={18} />
-              <h3>不是简单按时间排</h3>
-              <p>发文层级、时效性、力度强度、覆盖广度、约束强度、政策信号、新增信息七个维度加权打分。</p>
+              <h3>多维度评分</h3>
+              <p>按发文层级、时效性、力度、覆盖广度、约束强度、政策信号、新增信息七个维度加权评分。</p>
             </article>
             <article>
               <Network size={18} />
-              <h3>讲清怎么起作用</h3>
-              <p>每条重点政策输出「工具 → 中间变量 → 主体行为 → 宏观结果」链条，标注方向、强度、时滞和失效条件。</p>
+              <h3>传导机制</h3>
+              <p>对重点政策输出「工具、中间变量、主体行为、宏观结果」传导链，标注方向、强度、时滞与失效条件。</p>
             </article>
             <article>
               <Timer size={18} />
-              <h3>说清政策之间什么关系</h3>
-              <p>自动识别配套协同、时序承接、工具互补、目标张力，并算出这组政策的合力方向。</p>
+              <h3>政策关系</h3>
+              <p>识别配套协同、时序承接、工具互补、目标张力四类关系，并给出政策组合的总体方向。</p>
             </article>
           </div>
         </section>
@@ -533,16 +531,15 @@ export function Briefing({
 
       {phase === 'error' && (
         <section className="bp-preview">
-          <h2>采集服务未连上</h2>
+          <h2>采集服务未连接</h2>
           <p className="bp-error-help">
-            一键研判依赖本地采集服务。请在项目目录执行 <code>npm run start</code> 后重试，或先浏览已入库的政策库与方法说明。
+            政策扫描依赖本地采集服务。请在项目目录执行 <code>npm run start</code> 后重试，或先行浏览已入库的政策库。
           </p>
           <div className="bp-inline-actions">
             <button onClick={() => void run(windowDays)}>
               <RefreshCw size={15} /> 重试
             </button>
-            <button onClick={onGoLibrary}>先看政策库</button>
-            <button onClick={onGoMethod}>看方法与边界</button>
+            <button onClick={onGoLibrary}>打开政策库</button>
           </div>
         </section>
       )}
@@ -557,41 +554,39 @@ export function Briefing({
               <small>近 {windowDays} 天中央层面</small>
             </div>
             <div className="bp-kpi">
-              <span className="bp-kpi-label">最高优先级</span>
+              <span className="bp-kpi-label">最高评分</span>
               <strong>
                 {board.ranked[0]?.assessment.score ?? 0}
-                <em>{board.ranked[0]?.assessment.grade ?? '—'}</em>
+                <em>{board.ranked[0]?.assessment.grade ?? '—'} 级</em>
               </strong>
               <small>{board.ranked[0]?.policy.shortTitle || board.ranked[0]?.policy.title || '—'}</small>
             </div>
             <div className="bp-kpi">
-              <span className="bp-kpi-label">组合方向</span>
+              <span className="bp-kpi-label">政策组合方向</span>
               <strong className="is-text">{relations.combination.direction}</strong>
               <small>
-                扩张 {relations.combination.expansive} · 收紧 {relations.combination.restrictive} · 未定{' '}
+                扩张 {relations.combination.expansive} · 收紧 {relations.combination.restrictive} · 中性{' '}
                 {relations.combination.neutral}
               </small>
             </div>
             <div className="bp-kpi">
-              <span className="bp-kpi-label">识别到的关系</span>
+              <span className="bp-kpi-label">识别的政策关系</span>
               <strong>{relations.edges.length}</strong>
-              <small>配套／承接／互补／张力</small>
+              <small>配套、承接、互补、张力</small>
             </div>
             <div className="bp-kpi">
-              <span className="bp-kpi-label">最高暴露省份</span>
+              <span className="bp-kpi-label">影响最强省份</span>
               <strong className="is-text">{impact.provinces[0]?.short ?? '—'}</strong>
-              <small>暴露度 {impact.provinces[0]?.exposure ?? 0}</small>
+              <small>影响强度 {impact.provinces[0]?.exposure ?? 0}</small>
             </div>
           </section>
 
           <section className="bp-section">
             <header className="bp-section-head">
               <div>
-                <span className="bp-kicker">STEP 1 · 先看哪条</span>
-                <h2>政策优先级排序</h2>
-                <p>
-                  按七维度加权打分，分级 S／A／B／C。分数只回答"先看哪条"，不回答"效果有多大"。
-                </p>
+                <span className="bp-kicker">一、政策排序</span>
+                <h2>政策重要性排序</h2>
+                <p>按七个维度加权评分，分为 S、A、B、C 四级。评分用于确定阅读顺序，不反映政策效果大小。</p>
               </div>
               <button className="bp-ghost" onClick={exportBriefing}>
                 <Download size={15} /> 导出本期简报
@@ -644,11 +639,11 @@ export function Briefing({
           <section className="bp-section" id="bp-digest">
             <header className="bp-section-head">
               <div>
-                <span className="bp-kicker">STEP 2 · 到底说了什么</span>
+                <span className="bp-kicker">二、主要内容</span>
                 <h2>政策摘要</h2>
                 <p>
-                  对入选的 {digests.length} 项政策逐条压缩成主旨、事实、落实安排与关键表述。每句话都标注取自哪个字段，
-                  抽不到的直接写"原文未写明"——摘要读起来不够顺，是因为没有替原文补话。
+                  对入选的 {digests.length} 项政策，逐项提取主旨、依据、落实安排与关键表述。各句均标注来源字段；
+                  原文未载明的部分标注为"原文未载明"，不作补充。
                 </p>
               </div>
               <button className="bp-ghost" onClick={() => void copyAllDigests()}>
@@ -658,11 +653,11 @@ export function Briefing({
 
             <div className="dg-strip">
               <div>
-                <span>平均字段完整度</span>
+                <span>字段完整度均值</span>
                 <strong>{avgCoverage}%</strong>
               </div>
               <div>
-                <span>完整度 ≥75%</span>
+                <span>完整度 75% 以上</span>
                 <strong>
                   {digests.filter((item) => item.coverage >= 75).length}
                   <em>/ {digests.length}</em>
@@ -676,7 +671,7 @@ export function Briefing({
                 </strong>
               </div>
               <div>
-                <span>最常缺的字段</span>
+                <span>常见缺项</span>
                 <strong className="is-text">{topGap ?? '无'}</strong>
               </div>
             </div>
@@ -705,10 +700,10 @@ export function Briefing({
             <section className="bp-section">
               <header className="bp-section-head">
                 <div>
-                  <span className="bp-kicker">STEP 3 · 怎么起作用</span>
-                  <h2>作用机制与影响逻辑</h2>
+                  <span className="bp-kicker">三、作用机制</span>
+                  <h2>作用机制与影响路径</h2>
                   <p>
-                    先看 {mechanismRows.length} 项政策的主链对比，再展开单条政策的完整链条、时间路径与验证指标。
+                    先比较 {mechanismRows.length} 项政策的主要传导链，再展开单项政策的完整链条、时间路径与观察指标。
                   </p>
                 </div>
                 <button className="bp-ghost" onClick={() => onOpenPolicy(selected.policy.id)}>
@@ -749,7 +744,7 @@ export function Briefing({
                 ))}
                 {mechanismRows.length === 0 && <p className="bp-empty">本期政策未识别到明确的传导渠道。</p>}
                 <p className="bp-mech-board-note">
-                  每行取该政策强度最高的一条链；点击任意一行可切换下方详情。渠道判定依据正文关键词密度，不是发文机关的自我归类。
+                  每行选取该项政策强度最高的一条传导链，点击可切换下方详情。渠道依据正文关键词密度判定。
                 </p>
               </div>
 
@@ -777,7 +772,7 @@ export function Briefing({
                     {selected.assessment.weaknesses.length > 0 ? (
                       selected.assessment.weaknesses.map((item) => <li key={item}>⚠ {item}</li>)
                     ) : (
-                      <li>未发现明显短板，但仍需回原文核对适用条件</li>
+                      <li>各维度评分均衡，适用条件以原文为准</li>
                     )}
                   </ul>
                 </aside>
@@ -825,7 +820,7 @@ export function Briefing({
                       </ol>
                     </div>
                     <div className="bp-chain-block">
-                      <h4>验证这条链要看什么</h4>
+                      <h4>观察指标</h4>
                       <ul className="bp-watch">
                         {chain.watch.map((item) => (
                           <li key={item.label}>
@@ -862,11 +857,11 @@ export function Briefing({
           <section className="bp-section" id="bp-rel">
             <header className="bp-section-head">
               <div>
-                <span className="bp-kicker">STEP 4 · 之间什么关系</span>
-                <h2>政策相互关系演示</h2>
+                <span className="bp-kicker">四、政策关系</span>
+                <h2>政策相互关系</h2>
                 <p>
-                  {relations.coverage.nodes} 项政策两两比对 {relations.coverage.pairs} 组，按同机关、同渠道、时间距离与方向异同四类线索判定，
-                  保留强度最高的 {relations.coverage.kept} 组。点击任一节点或明细行可高亮对应关系。
+                  对 {relations.coverage.nodes} 项政策两两比对 {relations.coverage.pairs} 组，按发文机关、传导渠道、时间距离与方向异同四类线索判定，
+                  保留强度最高的 {relations.coverage.kept} 组。点击节点或明细行可高亮对应关系。
                 </p>
               </div>
             </header>
@@ -885,7 +880,7 @@ export function Briefing({
             </div>
             {relations.coverage.dropped > 0 && (
               <p className="bp-rel-stats-note">
-                另有 {relations.coverage.dropped} 组判定成立但强度较低的关系未画入图中，明细表已按强度排序，可直接查。
+                另有 {relations.coverage.dropped} 组关系强度较低，未在图示中呈现，明细表按强度排序。
               </p>
             )}
 
@@ -900,7 +895,7 @@ export function Briefing({
               />
               <aside className="bp-relation-side">
                 <div className="bp-clusters">
-                  <h3>本期实际在打哪几条线</h3>
+                  <h3>本期政策组合的主要方向</h3>
                   {relations.clusters.map((cluster) => (
                     <div key={cluster.id} className="bp-cluster">
                       <span className={`bp-cluster-dir is-${cluster.direction === '收紧' ? 'down' : cluster.direction === '混合' ? 'mix' : 'up'}`}>
@@ -944,7 +939,7 @@ export function Briefing({
             </div>
 
             <div className="bp-rel-ledger">
-              <h3>关系明细：每一组是怎么判出来的</h3>
+              <h3>关系判定明细</h3>
               <table>
                 <thead>
                   <tr>
@@ -1005,9 +1000,9 @@ export function Briefing({
           <section className="bp-section">
             <header className="bp-section-head">
               <div>
-                <span className="bp-kicker">STEP 5 · 哪里先受影响</span>
-                <h2>省级影响推演</h2>
-                <p>{impact.caveats[0] ?? '按渠道权重与省份结构敏感度推演，不代表统计估计。'}</p>
+                <span className="bp-kicker">五、省级影响</span>
+                <h2>省级影响测算</h2>
+                <p>{impact.caveats[0] ?? '按政策渠道权重与各省经济结构测算。'}</p>
               </div>
               <button className="bp-ghost" onClick={onGoImpact}>
                 打开完整地图 <ArrowRight size={14} />
@@ -1015,7 +1010,7 @@ export function Briefing({
             </header>
             <div className="bp-province-grid">
               <div>
-                <h3>暴露度最高</h3>
+                <h3>影响强度较高的省份</h3>
                 {topProvinces.map((province) => (
                   <div key={province.code} className="bp-province-row">
                     <span className="bp-province-name">{province.short}</span>
@@ -1028,7 +1023,7 @@ export function Briefing({
                 ))}
               </div>
               <div>
-                <h3>相对靠后</h3>
+                <h3>影响强度较低的省份</h3>
                 {bottomProvinces.map((province) => (
                   <div key={province.code} className="bp-province-row is-low">
                     <span className="bp-province-name">{province.short}</span>
@@ -1045,8 +1040,8 @@ export function Briefing({
 
           <section className="bp-footnote">
             <p>
-              本期结果由 4 个官方来源、{scopedCount} 项政策文件实时生成。优先级权重、渠道敏感度与关系强度均为研判口径，
-              不是计量估计；引用前请回到原文与官方统计复核。
+              本期结果基于 {sources.filter((source) => source.ok).length} 个官方来源、{scopedCount} 项政策文件生成。
+              评分权重、渠道敏感度与关系强度为平台设定的分析口径，非计量估计结果；引用时请核对原文与官方统计数据。
             </p>
             <div className="bp-inline-actions">
               <button onClick={exportBriefing}>
@@ -1055,7 +1050,6 @@ export function Briefing({
               <button onClick={() => void run(windowDays)}>
                 <RefreshCw size={15} /> 重新扫描
               </button>
-              <button onClick={onGoMethod}>看方法与边界</button>
             </div>
           </section>
         </>

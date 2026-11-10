@@ -281,20 +281,20 @@ export function buildCoherence(policies: Policy[]): CoherenceResult {
   );
   if (weak.length > 0) {
     narrative.push(
-      `一致性最低的是「${weak.map((item) => item.short).join('」「')}」——` +
-        `${weak[0].mix.expansion > 0 && weak[0].mix.restriction > 0 ? `其中扩张方向 ${weak[0].mix.expansion} 份、收紧方向 ${weak[0].mix.restriction} 份同时出现` : '主要问题是方向未定，读者无法从文件本身判断取向'}。`,
+      `一致性最低的渠道为「${weak.map((item) => item.short).join('」「')}」。` +
+        `${weak[0].mix.expansion > 0 && weak[0].mix.restriction > 0 ? `其中扩张方向文件 ${weak[0].mix.expansion} 份、收紧方向 ${weak[0].mix.restriction} 份同时出现。` : '主要问题为方向未定，难以从文本判断取向。'}`,
     );
   }
   const flipChannels = channels.filter((channel) => channel.parts[1].score !== null && (channel.parts[1].score ?? 100) < 70);
   if (flipChannels.length > 0) {
     narrative.push(
-      `「${flipChannels.map((item) => item.short).join('」「')}」在三个月内出现过方向翻转，跨期一致性弱于同期一致性——这类反复会削弱政策信号的可信度。`,
+      `「${flipChannels.map((item) => item.short).join('」「')}」在三个月内出现方向变化，跨期一致性弱于同期一致性，此类反复将削弱政策信号。`,
     );
   }
   const alignWeak = channels.filter((channel) => (channel.parts[2].score ?? 100) < 50);
   if (alignWeak.length > 0) {
     narrative.push(
-      `「${alignWeak.slice(0, 3).map((item) => item.short).join('」「')}」的目标与工具对不上：文件写了要在这个方向发力，但本期该渠道上没有对应的工具。`,
+      `「${alignWeak.slice(0, 3).map((item) => item.short).join('」「')}」的目标与工具不匹配：文件已明确方向，但本期该渠道未出现对应工具。`,
     );
   }
 

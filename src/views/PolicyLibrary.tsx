@@ -113,7 +113,7 @@ export function PolicyLibrary({
           <div>
             <h1>政策库</h1>
             <p>
-              多源自动采集中央政策原文，统一抽成政策卡片：发布主体、工具、对象、传导渠道与原文位置全部保留。
+              自动采集中央政策原文，统一整理为政策卡片，保留发布主体、政策工具、作用对象、传导渠道与原文位置。
             </p>
           </div>
           <div className="library-summary">
@@ -143,7 +143,7 @@ export function PolicyLibrary({
             <div>
               <span className="section-kicker">采集状态</span>
               <p>
-                语料区间 {stats.earliest} → {stats.latest} · 最近入库 {formatUpdated(corpus.updatedAt)}
+                语料区间 {stats.earliest} 至 {stats.latest}，最近入库 {formatUpdated(corpus.updatedAt)}
                 {corpus.error ? ` · ${corpus.error}` : ''}
               </p>
             </div>
@@ -231,7 +231,7 @@ export function PolicyLibrary({
         )}
         {compareIds.length > 0 && (
           <button className="inline-compare-link" onClick={onGoCompare}>
-            已选 {compareIds.length} 项，去对比
+            已选 {compareIds.length} 项，前往对比
             <ArrowRight size={13} />
           </button>
         )}
@@ -240,7 +240,7 @@ export function PolicyLibrary({
       <section className="policy-table" aria-label="政策列表">
         <div className="policy-table-head">
           <span>对比</span>
-          <span>政策文件</span>
+          <span>政策名称</span>
           <span>主题</span>
           <span>发布时间</span>
           <span>政策工具</span>
@@ -262,7 +262,7 @@ export function PolicyLibrary({
               </div>
               <div className="policy-name-cell">
                 <button onClick={() => onOpen(policy.id)}>{policy.shortTitle || policy.title}</button>
-                <p>{policy.summary || policy.title}</p>
+                {policy.summary && policy.summary !== policy.title && <p>{policy.summary}</p>}
                 <div className="row-depth">
                   {policy.docNo && <span className="depth-docno">{policy.docNo}</span>}
                   {(policy.sections?.length ?? 0) > 0 && <span>{policy.sections!.length} 章</span>}
@@ -273,8 +273,8 @@ export function PolicyLibrary({
                     <span>{((policy.bodyLength ?? 0) / 1000).toFixed(1)}k 字</span>
                   )}
                   {(policy.paragraphs?.length ?? 0) > 0 && <span>{policy.paragraphs!.length} 段原文</span>}
-                  {policy.attachmentOnly && <span className="depth-warn">主体在附件</span>}
-                  {policy.bodySource === 'page+pdf' && <span className="depth-ok">含PDF正文</span>}
+                  {policy.attachmentOnly && <span className="depth-warn">正文见附件</span>}
+                  {policy.bodySource === 'page+pdf' && <span className="depth-ok">含附件正文</span>}
                 </div>
                 <div className="row-mobile-meta">
                   <TypeBadges types={policy.instrumentTypes} />
@@ -305,8 +305,8 @@ export function PolicyLibrary({
         {filtered.length === 0 && (
           <div className="empty-table">
             <Search size={22} />
-            <h3>没有符合条件的政策</h3>
-            <p>换一个关键词、工具类型或来源筛选。</p>
+            <h3>无符合条件的政策</h3>
+            <p>请调整关键词、工具类型或来源筛选条件。</p>
           </div>
         )}
       </section>
@@ -314,8 +314,8 @@ export function PolicyLibrary({
       <footer className="library-footnote">
         <span className="section-kicker">来源分级规则</span>
         <p>
-          <strong>政策原文</strong> 可直接引用；<strong>官方发布</strong> 用于补充实施信息；
-          <strong>权威媒体</strong> 只能作为线索，正式研究必须回补原文。来源等级会一直显示，不会被隐藏。
+          <strong>政策原文</strong>可直接引用；<strong>官方发布</strong>用于补充实施信息；
+          <strong>权威媒体</strong>作为检索线索，正式引用应回补原文。来源等级在列表中持续显示。
         </p>
       </footer>
     </div>

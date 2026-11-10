@@ -66,7 +66,7 @@ export function SourceRadar({ sources, total, updatedAt, windowDays }: SourceRad
     <div className="radar">
       <div className="radar-head">
         <span className="radar-live">
-          <i /> 监听中
+          <i /> 已连接
         </span>
         <span className="radar-window">近 {windowDays} 天窗口</span>
       </div>
@@ -137,7 +137,7 @@ export function SourceRadar({ sources, total, updatedAt, windowDays }: SourceRad
 
         <div className="radar-center">
           <span className="radar-center-num">{total}</span>
-          <span className="radar-center-cap">条语料</span>
+          <span className="radar-center-cap">项语料</span>
         </div>
       </div>
 
@@ -153,7 +153,7 @@ export function SourceRadar({ sources, total, updatedAt, windowDays }: SourceRad
       </ul>
 
       <p className="radar-foot">
-        {okCount}/{sources.length || 7} 源在线 · 最近入库 {clock(updatedAt)}
+        {okCount}/{sources.length || 7} 个来源可用 · 最近入库 {clock(updatedAt)}
       </p>
     </div>
   );

@@ -277,7 +277,7 @@ export function buildRelations(items: RankedPolicy[]): RelationResult {
   ].filter(Boolean);
   if (relationParts.length > 0) {
     narrative.push(
-      `共识别出${relationParts.join('、')}——这些关系是"合力"来源，单独看任一文件都会低估力度。`,
+      `共识别出${relationParts.join('、')}。政策之间存在合力，单看任一文件将低估整体力度。`,
     );
   }
   if (tensionEdges.length > 0) {
@@ -292,7 +292,7 @@ export function buildRelations(items: RankedPolicy[]): RelationResult {
   const missing = (Object.keys(CHANNEL_META) as ChannelId[]).filter((id) => !covered.has(id));
   if (missing.length > 0) {
     narrative.push(
-      `本期没有以「${missing.slice(0, 3).map(channelName).join('」「')}」为主渠道的政策文件——这些渠道若有动作，来自本期未采到的文件，评估时不应假定同等受益。`,
+      `本期无以「${missing.slice(0, 3).map(channelName).join('」「')}」为主渠道的政策文件。上述渠道如有政策动作，应来自本期未采集的文件。`,
     );
   }
 

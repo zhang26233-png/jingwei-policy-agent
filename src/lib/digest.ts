@@ -225,7 +225,7 @@ const maxAmountOf = (policy: Policy): string => {
 function buildFacts(policy: Policy, tools: string[]): DigestFact[] {
   const facts: DigestFact[] = [];
   const add = (label: string, value: string, tone: DigestFact['tone'] = 'plain') => {
-    facts.push({ label, value: value || '原文未写明', tone: value ? tone : 'missing' });
+    facts.push({ label, value: value || '原文未载明', tone: value ? tone : 'missing' });
   };
 
   add('发文机关', shortIssuer(policy.issuer), 'strong');
@@ -276,7 +276,7 @@ export function buildDigest(policy: Policy): PolicyDigest {
     }，文种为${policy.docType ?? '政策文件'}；${
       policy.effectiveDate
         ? `自 ${cnDate(policy.effectiveDate)} 起施行`
-        : '原文未写明施行日期，需按发布即生效或另文规定处理'
+        : '原文未载明施行日期，按发布即生效或另文规定处理'
     }${policy.validUntil ? `，有效期至 ${cnDate(policy.validUntil)}` : ''}。`,
     basis: '文号／成文日期／施行日期',
   });
@@ -374,7 +374,7 @@ export function buildDigest(policy: Policy): PolicyDigest {
     plainLines.push('');
   }
   plainLines.push(`- 来源：${policy.sourceUrl}`);
-  if (gaps.length > 0) plainLines.push(`- 摘要未覆盖：${gaps.join('、')}（原文未写明或未抽取到，不是没有相关内容）`);
+  if (gaps.length > 0) plainLines.push(`- 摘要未覆盖：${gaps.join('、')}（原文未载明或未抽取到）`);
 
   return {
     id: policy.id,

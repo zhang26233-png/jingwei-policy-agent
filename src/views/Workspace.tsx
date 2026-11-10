@@ -9,7 +9,7 @@ import {
   Download,
   FileSearch,
   GitCompareArrows,
-  Info,
+
   Layers3,
   RotateCcw,
   Search,
@@ -51,7 +51,6 @@ interface WorkspaceProps {
   onCompare: (id: string) => void;
   onExport: () => void;
   onGoLibrary: () => void;
-  onGoMethod: () => void;
 }
 
 export function Workspace({
@@ -67,7 +66,6 @@ export function Workspace({
   onCompare,
   onExport,
   onGoLibrary,
-  onGoMethod,
 }: WorkspaceProps) {
   const [input, setInput] = useState('');
 
@@ -86,19 +84,19 @@ export function Workspace({
           <div className="hero-copy">
             <div className="eyebrow">
               <span className="eyebrow-index">01</span>
-              POLICY EVIDENCE DESK
-              <span className="eyebrow-tag">校赛 MVP</span>
+              POLICY RESEARCH
+              <span className="eyebrow-tag">专题问答</span>
             </div>
             <h1>
-              把宏观政策，
+              按主题检索政策文件，
               <br />
               <em>
-                读成一条可核查的<span className="no-break">证据链。</span>
+                追溯每一项结论的<span className="no-break">出处。</span>
               </em>
             </h1>
             <p className="hero-description">
-              汇总官方政策原文，抽取政策工具与作用对象，连接宏观指标，
-              并把“原文事实、数据观察、机制推断”分开呈现。聊天只是入口，证据才是产品。
+              输入研究问题，系统检索国务院、财政部、中国人民银行等官方栏目发布的政策文件，
+              提取政策工具与作用对象，并将结论分为原文表述、指标观察与机制判断三类分别呈现。
             </p>
 
             <form className="hero-search" onSubmit={submit}>
@@ -106,17 +104,17 @@ export function Workspace({
               <input
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder="输入一个宏观政策研究问题，例如：财政和货币工具如何组合？"
+                placeholder="输入研究问题，例如：财政政策与货币政策的工具组合"
                 aria-label="输入研究问题"
               />
               <button type="submit" className="search-submit">
-                开始分析
+                开始检索
                 <ArrowRight size={17} />
               </button>
             </form>
 
             <div className="sample-queries">
-              <span>试试这些问题</span>
+              <span>示例问题</span>
               <div>
                 {SAMPLE_QUERIES.slice(0, 4).map((query) => (
                   <button key={query} onClick={() => onRun(query)}>
@@ -130,8 +128,8 @@ export function Workspace({
 
           <aside className="corpus-panel">
             <div className="corpus-panel-head">
-              <span>语料边界</span>
-              <span className="live-dot">DEMO</span>
+              <span>语料范围</span>
+              <span className="live-dot">校订快照</span>
             </div>
             <div className="corpus-number">
               8<span>项中央政策</span>
@@ -144,17 +142,17 @@ export function Workspace({
                 <dd>7 官方 + 1 权威媒体</dd>
               </div>
               <div>
-                <dt>政策卡片</dt>
-                <dd>结构化 12 个字段</dd>
+                <dt>结构化字段</dt>
+                <dd>12 项</dd>
               </div>
               <div>
-                <dt>最后校验</dt>
+                <dt>最后校订</dt>
                 <dd>2026.10.26</dd>
               </div>
             </dl>
             <div className="corpus-warning">
               <CircleAlert size={15} />
-              <span>这是演示快照，不含地方细则与2026年增量政策。系统会主动暴露覆盖边界。</span>
+              <span>本批语料为校订快照，不含地方细则与 2026 年增量政策。</span>
             </div>
           </aside>
         </section>
@@ -170,27 +168,23 @@ export function Workspace({
             <span className="cap-number">02</span>
             <GitCompareArrows size={20} />
             <h2>分析</h2>
-            <p>跨政策识别工具组合、时间接续和执行条件，而不是逐篇写摘要。</p>
+            <p>跨政策识别工具组合、时间接续与执行条件，不限于逐篇摘要。</p>
           </div>
           <div>
             <span className="cap-number">03</span>
             <ShieldCheck size={20} />
             <h2>可视化</h2>
-            <p>传导链、指标联动和证据审计同时呈现，拒绝无依据的因果结论。</p>
+            <p>传导链、指标联动与来源标注同时呈现，结论均附依据。</p>
           </div>
         </section>
 
         <section className="home-footer">
           <div>
-            <span className="section-kicker">为什么不是直接问通用大模型</span>
-            <p>通用模型能生成解释，但无法替你证明语料是否完整、引用是否支持结论、两次运行是否一致。</p>
+            <span className="section-kicker">与通用问答的区别</span>
+            <p>通用模型可以生成解释，但不提供语料完整性、引用与结论是否对应、两次结果是否一致的核验。</p>
           </div>
-          <button className="text-button" onClick={onGoMethod}>
-            查看系统回答
-            <ArrowRight size={14} />
-          </button>
           <button className="text-button" onClick={onGoLibrary}>
-            先浏览政策库
+            打开政策库
             <ArrowRight size={14} />
           </button>
         </section>
@@ -203,7 +197,7 @@ export function Workspace({
       <section className="result-head">
         <div className="eyebrow">
           <span className="eyebrow-index">RUN</span>
-          政策证据分析
+          政策检索分析
           <span className="eyebrow-tag">{running ? '正在执行' : '已完成'}</span>
         </div>
         <div className="result-title-row">
@@ -249,8 +243,8 @@ export function Workspace({
           <div className="running-copy">
             <span className="pulse-ring" />
             <div>
-              <h2>正在把问题拆成可核查的步骤</h2>
-              <p>检索语料、抽取政策字段、关联指标并校验引用。本 MVP 使用确定性检索，不调用大模型。</p>
+              <h2>正在检索政策文件并提取要素</h2>
+              <p>检索语料、抽取政策字段、关联指标并核对引用。本平台采用确定性检索，不以生成式模型生成结论。</p>
             </div>
           </div>
           <AgentTrace
@@ -283,7 +277,7 @@ export function Workspace({
                       ? '三层结论'
                       : mode === 'decision'
                         ? '决策参考摘要'
-                        : '这件事和你有什么关系'}
+                        : '要点解读'}
                   </h2>
                 </div>
                 <span className="verification-chip">
@@ -303,10 +297,10 @@ export function Workspace({
                   <ShieldCheck size={23} />
                 </div>
                 <div>
-                  <span className="section-kicker">ABSTENTION / 拒答</span>
-                  <h2>证据不足，不生成影响链</h2>
+                  <span className="section-kicker">ABSTENTION／不作推断</span>
+                  <h2>语料中无直接对应文件，不作机制推断</h2>
                   <p>
-                    当前语料没有直接政策文件，系统拒绝用相邻政策替代回答。这比生成一个流畅但无出处的答案更接近真实研究。
+                    现有语料未收录与该问题直接对应的政策文件。系统不以相邻政策替代作答，待补充语料后再行分析。
                   </p>
                   <div className="abstention-next">
                     <span>需要补充</span>
@@ -320,7 +314,7 @@ export function Workspace({
                   <div className="panel-heading">
                     <div>
                       <span className="section-kicker">POLICY EVIDENCE / {result.matched.length} 项</span>
-                      <h2>本次使用的政策证据</h2>
+                      <h2>引用政策</h2>
                     </div>
                     <button className="text-button" onClick={onGoLibrary}>
                       浏览全部政策
@@ -347,7 +341,7 @@ export function Workspace({
                       <span className="section-kicker">TRANSMISSION / 条件性关系</span>
                       <h2>政策影响传导链</h2>
                       <p className="panel-subtitle">
-                        这是机制假设，不是已经验证的因果效应。虚线表示需要额外条件才能成立。
+                        图示为机制假设，虚线表示需附加条件方可成立。
                       </p>
                     </div>
                   </div>
@@ -360,7 +354,7 @@ export function Workspace({
                       <span className="section-kicker">INDICATOR LINKAGE / 政策变量</span>
                       <h2>政策与指标的时间联动</h2>
                       <p className="panel-subtitle">
-                        只展示已公布的利率与存准率变化，不把政策后的指标波动直接归因于政策。
+                        仅列示已公布的利率与存款准备金率变动，不对政策后的指标波动作归因判断。
                       </p>
                     </div>
                   </div>
@@ -372,16 +366,12 @@ export function Workspace({
             <section className="method-note">
               <div className="method-note-mark">i</div>
               <div>
-                <h3>系统如何得到这些结论</h3>
+                <h3>结论的来源</h3>
                 <p>
-                  先按政策标签与正文相似度检索，再把结论拆成原文事实、数据观察和机制推断。
-                  每条结论都绑定来源；证据不足时拒绝补写。
+                  先按政策标签与正文相似度检索，再将结论分为原文表述、指标观察与机制判断三类。
+                  每条结论均标注来源文件与段落。
                 </p>
               </div>
-              <button className="text-button" onClick={onGoMethod}>
-                查看验证设计
-                <ArrowRight size={14} />
-              </button>
             </section>
           </main>
 
@@ -389,7 +379,7 @@ export function Workspace({
             <div className="audit-card">
               <div className="audit-title">
                 <ShieldCheck size={17} />
-                证据审计
+                检索概览
               </div>
               <div className="audit-coverage">
                 <div>
@@ -435,7 +425,7 @@ export function Workspace({
               </div>
 
               <div className="audit-section">
-                <span className="audit-label">系统警告</span>
+                <span className="audit-label">说明事项</span>
                 <ul className="warning-list">
                   {result.warnings.map((warning) => (
                     <li key={warning}>
@@ -447,7 +437,7 @@ export function Workspace({
               </div>
 
               <div className="audit-section audit-query">
-                <span className="audit-label">本次运行</span>
+                <span className="audit-label">本次检索</span>
                 <dl>
                   <div>
                     <dt>识别主题</dt>
@@ -464,15 +454,11 @@ export function Workspace({
                 </dl>
               </div>
 
-              <button className="audit-method-link" onClick={onGoMethod}>
-                <Info size={14} />
-                阅读系统方法与边界
-              </button>
             </div>
 
             <div className="aside-tip">
               <Sparkle size={16} />
-              <p>切换到“公众解读”，同一套证据会变成不带术语的解释。</p>
+              <p>切换至“公众解读”，可查看不含专业术语的表述。</p>
             </div>
           </aside>
         </section>

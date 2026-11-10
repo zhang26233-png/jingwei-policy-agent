@@ -218,7 +218,7 @@ export function ChinaMap({
               onMouseLeave={() => setHover(null)}
               onClick={() => score && onSelect(shape.adcode)}
             >
-              <title>{score ? `${shape.name}：暴露度 ${score.exposure}` : `${shape.name}：不参与评估`}</title>
+              <title>{score ? `${shape.name}：影响强度 ${score.exposure}` : `${shape.name}：不纳入测算`}</title>
             </path>
           );
         })}
@@ -248,7 +248,7 @@ export function ChinaMap({
           <span key={color} className="map-legend-swatch" style={{ background: color }} />
         ))}
         <span className="map-legend-high">高</span>
-        <span className="map-legend-na">灰：不参与评估</span>
+        <span className="map-legend-na">灰：不纳入测算</span>
       </div>
     </div>
   );

@@ -30,12 +30,12 @@ function citationNumbers(result: AnalysisResult, ids: string[]): string {
 export function buildReport(result: AnalysisResult): string {
   const date = new Date().toLocaleDateString('zh-CN');
   const lines: string[] = [
-    '# 宏策智研 · 政策研究简报',
+    '# 经纬纵横 · 政策研究简报',
     '',
     `- 研究问题：${result.query}`,
     `- 生成日期：${date}`,
     '- 语料范围：中央政策自动采集 + 校订样例，具体条目见政策库',
-    '- 使用声明：本报告用于研究辅助，不构成政策效果估计或决策建议。',
+    '- 说明：本报告为研究辅助材料，所含结论不作政策效果估计。',
     '',
     '## 一、分析结论',
     '',
@@ -52,7 +52,7 @@ export function buildReport(result: AnalysisResult): string {
   lines.push('## 二、公众版解释', '');
   lines.push(`**一句话：** ${result.publicSummary.oneLine}`);
   lines.push('');
-  lines.push(`**与你有关：** ${result.publicSummary.relevance}`);
+  lines.push(`**公众关注点：** ${result.publicSummary.relevance}`);
   lines.push('');
   lines.push(`**常见误解：** ${result.publicSummary.misconception}`);
   lines.push('');
@@ -77,14 +77,14 @@ export function buildReport(result: AnalysisResult): string {
   result.warnings.forEach((warning) => lines.push(`- ${warning}`));
   lines.push('');
   lines.push('---');
-  lines.push('由宏策智研 MVP 生成。所有政策结论应回到原文与官方数据复核。');
+  lines.push('由经纬纵横生成。政策结论请以原文与官方统计数据为准。');
 
   return lines.join('\n');
 }
 
 export function buildCompareReport(selected: Policy[]): string {
   const lines: string[] = [
-    '# 宏策智研 · 政策对比清单',
+    '# 经纬纵横 · 政策对比清单',
     '',
     `- 对比政策：${selected.length} 项`,
     `- 生成日期：${new Date().toLocaleDateString('zh-CN')}`,
@@ -165,25 +165,25 @@ function synergyChapter(result: SynergyResult, heading = '## 六、政策协同�
 
 export function buildSynergyReport(result: SynergyResult): string {
   const lines: string[] = [
-    '# 宏策智研 · 政策协同测度',
+    '# 经纬纵横 · 政策协同测算',
     '',
     `- 生成日期：${new Date().toLocaleDateString('zh-CN')}`,
     `- 样本：${result.overall.policyCount} 份政策文件，覆盖 ${result.overall.channelCount} 条传导渠道`,
-    '- 使用声明：本报告测的是政策文本的取向一致性与可执行条件，不构成政策效果估计。',
+    '- 说明：本报告测算政策文本的取向一致性与执行条件，不涉及政策效果估计。',
     '',
-    ...synergyChapter(result, '## 一、测度结果'),
+    ...synergyChapter(result, '## 一、测算结果'),
     '## 二、指标口径',
     '',
     '| 指标 | 权重 | 算法 |',
     '| --- | --- | --- |',
     ...result.method.map((item) => `| ${item.label} | ${Math.round(item.weight * 100)}% | ${item.how} |`),
     '',
-    '## 三、边界',
+    '## 三、适用范围',
     '',
     ...result.caveats.map((caveat) => `- ${caveat}`),
     '',
     '---',
-    '由宏策智研 MVP 自动生成。',
+    '由经纬纵横自动生成。',
   ];
   return lines.join('\n');
 }
@@ -193,11 +193,11 @@ export function buildBriefingReport(input: BriefingInput): string {
   const date = new Date(input.generatedAt);
   const stamp = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   const lines: string[] = [
-    '# 宏策智研 · 一键研判简报',
+    '# 经纬纵横 · 政策扫描简报',
     '',
     `- 生成时间：${stamp}`,
     `- 时间窗：近 ${input.windowDays} 天`,
-    `- 参与排序：${board.scanned} 项政策文件（中央层面，来自财政部、人民银行、国务院官方栏目）`,
+    `- 参与排序：${board.scanned} 项政策文件（中央层面，来自国务院、财政部、中国人民银行官方栏目）`,
     `- 使用声明：本简报用于研究辅助，不构成政策效果估计或决策建议。所有结论须回到原文复核。`,
     '',
     '## 一、本期概览',
@@ -317,18 +317,18 @@ export function buildBriefingReport(input: BriefingInput): string {
   });
   lines.push('');
 
-  lines.push('## 八、方法与边界', '');
+  lines.push('## 八、数据说明', '');
   lines.push('- 优先级：发文层级 22%、时效性 18%、力度强度 18%、覆盖广度 13%、约束强度 12%、政策信号 12%、新增信息 5%，加权后分级。');
   lines.push('- 机制链：由政策工具、传导渠道、作用对象与原文关键句推导，方向由表述倾向判定，时滞为定性区间。');
   lines.push('- 关系：依据同发文机关、同渠道、时间距离与方向异同推导，不等于发文机关确认的配套关系。');
-  lines.push('- 省级影响：渠道权重 × 省份结构敏感度，属结构推演，非计量估计，未使用统计年鉴校准。');
-  lines.push('- 协同测度：一致性由"横向／时序／目标—工具"三项加权，可执行性由"目标可测／责任可归属／资源有保障／时限明确／可考核"五项各 20 分合成。');
+  lines.push('- 省级影响：渠道权重与省份经济结构敏感度的乘积，属结构测算，非计量估计，未使用统计年鉴校准。');
+  lines.push('- 政策协同：一致性由"横向／时序／目标—工具"三项加权，可执行性由"目标可测／责任可归属／资源有保障／时限明确／可考核"五项各 20 分合成。');
   relations.caveats.forEach((item) => lines.push(`- ${item}`));
   impact.caveats.forEach((item) => lines.push(`- ${item}`));
   synergy.caveats.forEach((item) => lines.push(`- ${item}`));
   lines.push('');
   lines.push('---');
-  lines.push('由宏策智研 MVP 自动生成。');
+  lines.push('由经纬纵横自动生成。');
 
   return lines.join('\n');
 }
