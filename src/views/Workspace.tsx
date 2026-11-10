@@ -22,7 +22,7 @@ import { AgentTrace } from '../components/AgentTrace';
 import { IndicatorChart } from '../components/IndicatorChart';
 import { PolicyCard } from '../components/PolicyCard';
 import { TransmissionGraph } from '../components/TransmissionGraph';
-import { CORPUS_META } from '../data/policies';
+import { CORPUS_META, corpusStats } from '../data/policies';
 
 const SAMPLE_QUERIES = [
   '2025年稳增长政策中，财政和货币工具如何组合？',
@@ -128,31 +128,34 @@ export function Workspace({
 
           <aside className="corpus-panel">
             <div className="corpus-panel-head">
-              <span>语料范围</span>
-              <span className="live-dot">校订快照</span>
+              <span>检索范围</span>
+              <span className="live-dot">全量语料</span>
             </div>
             <div className="corpus-number">
-              8<span>项中央政策</span>
+              {CORPUS_META.policyCount}
+              <span>项政策</span>
             </div>
-            <p className="corpus-range">2024.09 — 2025.08</p>
+            <p className="corpus-range">{CORPUS_META.range}</p>
             <div className="corpus-rule" />
             <dl className="corpus-stats">
               <div>
-                <dt>来源</dt>
-                <dd>7 官方 + 1 权威媒体</dd>
+                <dt>采集方式</dt>
+                <dd>
+                  {corpusStats().auto} 项自动 · {corpusStats().seed} 项校订
+                </dd>
               </div>
               <div>
                 <dt>结构化字段</dt>
                 <dd>12 项</dd>
               </div>
               <div>
-                <dt>最后校订</dt>
-                <dd>2026.10.26</dd>
+                <dt>语料版本</dt>
+                <dd>{CORPUS_META.version}</dd>
               </div>
             </dl>
             <div className="corpus-warning">
               <CircleAlert size={15} />
-              <span>本批语料为校订快照，不含地方细则与 2026 年增量政策。</span>
+              <span>检索对象为中央层面政策文件与背景材料，不含地方细则与省级配套文件。</span>
             </div>
           </aside>
         </section>

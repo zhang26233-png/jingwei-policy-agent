@@ -192,11 +192,7 @@ function App() {
 
   const navigate = (nextView: ViewName) => {
     const params = new URLSearchParams(window.location.search);
-    if (nextView === 'workspace') {
-      params.delete('view');
-    } else {
-      params.set('view', nextView);
-    }
+    params.set('view', nextView);
     window.history.replaceState(null, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`);
     setView(nextView);
     setMobileNavOpen(false);
@@ -253,6 +249,7 @@ function App() {
       const requestedView = params.get('view');
       if (
         requestedView === 'briefing' ||
+        requestedView === 'workspace' ||
         requestedView === 'library' ||
         requestedView === 'impact' ||
         requestedView === 'compare' ||
